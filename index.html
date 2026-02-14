@@ -77,6 +77,51 @@
     <div class="fab-container fab-left">
         <button class="fab fab-pdf" onclick="generateReport()">PDF</button>
     </div>
+    <div class="fab-container fab-right">
+        <button class="fab fab-navigate" onclick="openNavigationModal()">📍</button>
+    </div>
+    
+    <!-- Navigation Modal -->
+    <div class="modal" id="navigation-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Vai alla Nicchia</h3>
+                <button class="modal-close" onclick="closeNavigationModal()">×</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Seleziona Nicchia</label>
+                <select class="form-select" id="navigation-niche-select" onchange="navigateToNiche()">
+                    <option value="">Seleziona una nicchia...</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Operator Name Modal -->
+    <div class="modal" id="operator-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Informazioni Operatore</h3>
+            </div>
+            
+            <form id="operator-form">
+                <div class="form-group">
+                    <label class="form-label">Nome Operatore *</label>
+                    <input type="text" class="form-input" id="operator-name" required placeholder="Inserisci il tuo nome">
+                </div>
+                
+                <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #ffc107;">
+                    <p style="margin: 0; color: #856404; font-size: 0.9rem;">
+                        <strong>📧 Promemoria:</strong><br>
+                        Il report deve essere inviato a: <strong>a.manduchi@rfi.it</strong>
+                    </p>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Procedi con Generazione PDF</button>
+            </form>
+        </div>
+    </div>
     
     <!-- Malfunction Modal -->
     <div class="modal" id="malfunction-modal">

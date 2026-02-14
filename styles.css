@@ -344,6 +344,11 @@ body::before {
     right: auto;
 }
 
+.fab-container.fab-right {
+    right: 20px;
+    bottom: 100px; /* Position above the warning button */
+}
+
 .fab {
     width: 64px;
     height: 64px;
@@ -372,6 +377,12 @@ body::before {
     font-weight: 700;
 }
 
+.fab.fab-navigate {
+    background: linear-gradient(135deg, var(--primary), #1e40af);
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+    font-size: 24px;
+}
+
 .fab:hover {
     transform: scale(1.1);
     box-shadow: 0 6px 25px rgba(239, 68, 68, 0.6);
@@ -379,6 +390,10 @@ body::before {
 
 .fab.fab-pdf:hover {
     box-shadow: 0 6px 25px rgba(34, 197, 94, 0.6);
+}
+
+.fab.fab-navigate:hover {
+    box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6);
 }
 
 /* Malfunction Modal */

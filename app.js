@@ -148,13 +148,11 @@ function initializeChecklist() {
             }
             if (type === 'tem') {
                 item.checks.tem_stato = null;
-                item.checks.tem_sigillo = null;
+                // TEM does not require seal verification
                 item.checks.tem_segnaletica = null;
                 item.photosByType.tem_stato = [];
-                item.photosByType.tem_sigillo = [];
                 item.photosByType.tem_segnaletica = [];
                 item.needsPhoto.tem_stato = false;
-                item.needsPhoto.tem_sigillo = false;
                 item.needsPhoto.tem_segnaletica = false;
             }
             if (type === 'quadro_vvf') {
@@ -294,8 +292,11 @@ function createChecklistItem(item, index) {
                         Allega Foto (obbligatoria)
                     </label>
                 </div>
-                <div id="photos-${typePrefix}-stato-${item.id}" class="photo-preview"></div>
-                
+                <div id="photos-${typePrefix}-stato-${item.id}" class="photo-preview"></div>`;
+        
+        // Only show seal check for non-TEM equipment
+        if (type !== 'tem') {
+            checksHTML += `
                 <div class="check-label" style="margin-top: 1rem;">Verifica manomissione sigillo</div>
                 <div class="radio-group">
                     <label class="radio-label">
@@ -317,8 +318,10 @@ function createChecklistItem(item, index) {
                         Allega Foto (obbligatoria)
                     </label>
                 </div>
-                <div id="photos-${typePrefix}-sigillo-${item.id}" class="photo-preview"></div>
-                
+                <div id="photos-${typePrefix}-sigillo-${item.id}" class="photo-preview"></div>`;
+        }
+        
+        checksHTML += `
                 <div class="check-label" style="margin-top: 1rem;">Presenza segnaletica di riferimento</div>
                 <div class="radio-group">
                     <label class="radio-label">
@@ -467,18 +470,28 @@ function updateItemCompletion(itemId) {
     for (const type of item.types) {
         const prefix = type === 'idrante' ? 'idrante' : (type === 'tem' ? 'tem' : 'quadro');
         
-        if (!item.checks[`${prefix}_stato`] || 
-            !item.checks[`${prefix}_sigillo`] || 
-            !item.checks[`${prefix}_segnaletica`]) {
-            allChecked = false;
-            break;
+        // For TEM, we don't check sigillo
+        if (type === 'tem') {
+            if (!item.checks[`${prefix}_stato`] || 
+                !item.checks[`${prefix}_segnaletica`]) {
+                allChecked = false;
+                break;
+            }
+        } else {
+            if (!item.checks[`${prefix}_stato`] || 
+                !item.checks[`${prefix}_sigillo`] || 
+                !item.checks[`${prefix}_segnaletica`]) {
+                allChecked = false;
+                break;
+            }
         }
         
         // Check if photos are required and provided
         if (item.needsPhoto[`${prefix}_stato`] && (!item.photosByType[`${prefix}_stato`] || item.photosByType[`${prefix}_stato`].length === 0)) {
             allPhotosProvided = false;
         }
-        if (item.needsPhoto[`${prefix}_sigillo`] && (!item.photosByType[`${prefix}_sigillo`] || item.photosByType[`${prefix}_sigillo`].length === 0)) {
+        // Only check sigillo photos for non-TEM equipment
+        if (type !== 'tem' && item.needsPhoto[`${prefix}_sigillo`] && (!item.photosByType[`${prefix}_sigillo`] || item.photosByType[`${prefix}_sigillo`].length === 0)) {
             allPhotosProvided = false;
         }
         if (item.needsPhoto[`${prefix}_segnaletica`] && (!item.photosByType[`${prefix}_segnaletica`] || item.photosByType[`${prefix}_segnaletica`].length === 0)) {
@@ -701,6 +714,69 @@ function clearData() {
     }
 }
 
+// Navigation Modal Functions
+function openNavigationModal() {
+    const select = document.getElementById('navigation-niche-select');
+    select.innerHTML = '<option value="">Seleziona una nicchia...</option>';
+    
+    checklistData.forEach((item, index) => {
+        const niche = TECH_NICHES_DATA.find(n => n.id === item.id);
+        if (niche) {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = `Km ${niche.km} - Binario ${niche.binario}`;
+            select.appendChild(option);
+        }
+    });
+    
+    document.getElementById('navigation-modal').classList.add('show');
+}
+
+function closeNavigationModal() {
+    document.getElementById('navigation-modal').classList.remove('show');
+}
+
+function navigateToNiche() {
+    const select = document.getElementById('navigation-niche-select');
+    const nicheId = select.value;
+    
+    if (nicheId) {
+        const element = document.getElementById(`item-${nicheId}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            closeNavigationModal();
+            
+            // Highlight the element briefly
+            element.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+            setTimeout(() => {
+                element.style.backgroundColor = '';
+            }, 2000);
+        }
+    }
+}
+
+// Operator Modal Functions
+let operatorName = '';
+
+function openOperatorModal() {
+    document.getElementById('operator-modal').classList.add('show');
+}
+
+function closeOperatorModal() {
+    document.getElementById('operator-modal').classList.remove('show');
+}
+
+document.getElementById('operator-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    operatorName = document.getElementById('operator-name').value.trim();
+    
+    if (operatorName) {
+        closeOperatorModal();
+        openFeedbackModal();
+    }
+});
+
 // Feedback Modal Functions
 function openFeedbackModal() {
     document.getElementById('feedback-modal').classList.add('show');
@@ -722,8 +798,8 @@ document.getElementById('feedback-form')?.addEventListener('submit', function(e)
 
 // Report generation
 async function generateReport() {
-    // First show feedback modal
-    openFeedbackModal();
+    // First ask for operator name
+    openOperatorModal();
 }
 
 async function actuallyGenerateReport() {
@@ -741,6 +817,8 @@ async function actuallyGenerateReport() {
     pdf.setFontSize(12);
     pdf.setFont(undefined, 'normal');
     pdf.text(`Data Report: ${new Date().toLocaleString('it-IT')}`, 20, y);
+    y += 7;
+    pdf.text(`Operatore: ${operatorName}`, 20, y);
     y += 10;
     
     // Only count completed items
@@ -761,7 +839,7 @@ async function actuallyGenerateReport() {
         for (const type of item.types) {
             const prefix = type === 'idrante' ? 'idrante' : (type === 'tem' ? 'tem' : 'quadro');
             if (item.checks[`${prefix}_stato`] === 'non_funzionante' ||
-                item.checks[`${prefix}_sigillo`] === 'manomesso' ||
+                (type !== 'tem' && item.checks[`${prefix}_sigillo`] === 'manomesso') ||
                 item.checks[`${prefix}_segnaletica`] === 'assente') {
                 return true;
             }
@@ -771,6 +849,55 @@ async function actuallyGenerateReport() {
     
     pdf.text(`Nicchie con problemi: ${problematicItems.length}`, 20, y);
     y += 10;
+    
+    // Add section for non-functional equipment
+    const nonFunctionalItems = verifiedItems.filter(item => {
+        for (const type of item.types) {
+            const prefix = type === 'idrante' ? 'idrante' : (type === 'tem' ? 'tem' : 'quadro');
+            if (item.checks[`${prefix}_stato`] === 'non_funzionante') {
+                return true;
+            }
+        }
+        return false;
+    });
+    
+    if (nonFunctionalItems.length > 0) {
+        y += 5;
+        pdf.setFontSize(14);
+        pdf.setFont(undefined, 'bold');
+        pdf.text('APPRESTAMENTI NON FUNZIONANTI', 20, y);
+        y += 10;
+        
+        pdf.setFontSize(10);
+        pdf.setFont(undefined, 'normal');
+        
+        nonFunctionalItems.forEach(item => {
+            const niche = TECH_NICHES_DATA.find(n => n.id === item.id);
+            if (niche) {
+                if (y > 275) {
+                    pdf.addPage();
+                    y = 20;
+                }
+                
+                pdf.setFont(undefined, 'bold');
+                pdf.text(`Km ${niche.km} - Binario ${niche.binario}`, 25, y);
+                y += 5;
+                pdf.setFont(undefined, 'normal');
+                
+                for (const type of item.types) {
+                    const prefix = type === 'idrante' ? 'idrante' : (type === 'tem' ? 'tem' : 'quadro');
+                    if (item.checks[`${prefix}_stato`] === 'non_funzionante') {
+                        const label = type === 'idrante' ? 'Idrante VVF' : (type === 'tem' ? 'TEM' : 'Quadro VVF');
+                        pdf.text(`  - ${label}: NON FUNZIONANTE`, 30, y);
+                        y += 5;
+                    }
+                }
+                y += 3;
+            }
+        });
+        
+        y += 5;
+    }
     
     // Add feedback if provided
     if (userFeedback.problems || userFeedback.suggestions) {
@@ -870,13 +997,18 @@ async function actuallyGenerateReport() {
                 y += 5;
                 pdf.text(`    - Stato: ${item.checks[`${prefix}_stato`] === 'funzionante' ? 'Funzionante' : 'Non Funzionante'}`, 30, y);
                 y += 5;
-                pdf.text(`    - Sigillo: ${item.checks[`${prefix}_sigillo`] === 'integro' ? 'Integro' : 'Manomesso'}`, 30, y);
-                y += 5;
+                // Only show sigillo for non-TEM equipment
+                if (type !== 'tem') {
+                    pdf.text(`    - Sigillo: ${item.checks[`${prefix}_sigillo`] === 'integro' ? 'Integro' : 'Manomesso'}`, 30, y);
+                    y += 5;
+                }
                 pdf.text(`    - Segnaletica: ${item.checks[`${prefix}_segnaletica`] === 'presente' ? 'Presente' : 'Assente'}`, 30, y);
                 y += 5;
                 
                 // Add photos for this check type if present
-                const photoTypes = [`${prefix}_stato`, `${prefix}_sigillo`, `${prefix}_segnaletica`];
+                const photoTypes = type === 'tem' 
+                    ? [`${prefix}_stato`, `${prefix}_segnaletica`]
+                    : [`${prefix}_stato`, `${prefix}_sigillo`, `${prefix}_segnaletica`];
                 for (const photoType of photoTypes) {
                     const photos = item.photosByType[photoType] || [];
                     if (photos.length > 0) {
