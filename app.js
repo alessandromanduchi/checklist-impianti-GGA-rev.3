@@ -833,7 +833,11 @@ function navigateToNiche() {
 }
 
 // Operator Modal Functions
-let operatorName = '';
+let operatorInfo = {
+    firstName: '',
+    lastName: '',
+    sector: ''
+};
 
 function openOperatorModal() {
     document.getElementById('operator-modal').classList.add('show');
@@ -846,9 +850,11 @@ function closeOperatorModal() {
 document.getElementById('operator-form')?.addEventListener('submit', function(e) {
     e.preventDefault();
     
-    operatorName = document.getElementById('operator-name').value.trim();
+    operatorInfo.firstName = document.getElementById('operator-firstname').value.trim();
+    operatorInfo.lastName = document.getElementById('operator-lastname').value.trim();
+    operatorInfo.sector = document.getElementById('operator-sector').value;
     
-    if (operatorName) {
+    if (operatorInfo.firstName && operatorInfo.lastName && operatorInfo.sector) {
         closeOperatorModal();
         openFeedbackModal();
     }
@@ -895,7 +901,9 @@ async function actuallyGenerateReport() {
     pdf.setFont(undefined, 'normal');
     pdf.text(`Data Report: ${new Date().toLocaleString('it-IT')}`, 20, y);
     y += 7;
-    pdf.text(`Operatore: ${operatorName}`, 20, y);
+    pdf.text(`Operatore: ${operatorInfo.firstName} ${operatorInfo.lastName}`, 20, y);
+    y += 7;
+    pdf.text(`Settore: ${operatorInfo.sector}`, 20, y);
     y += 10;
     
     // Only count completed items

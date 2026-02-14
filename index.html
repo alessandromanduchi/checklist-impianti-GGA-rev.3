@@ -147,8 +147,26 @@
             
             <form id="operator-form">
                 <div class="form-group">
-                    <label class="form-label">Nome Operatore *</label>
-                    <input type="text" class="form-input" id="operator-name" required placeholder="Inserisci il tuo nome">
+                    <label class="form-label">Nome *</label>
+                    <input type="text" class="form-input" id="operator-firstname" required placeholder="Inserisci il tuo nome">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Cognome *</label>
+                    <input type="text" class="form-input" id="operator-lastname" required placeholder="Inserisci il tuo cognome">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Settore *</label>
+                    <select class="form-select" id="operator-sector" required>
+                        <option value="">Seleziona settore...</option>
+                        <option value="LV">LV</option>
+                        <option value="TE">TE</option>
+                        <option value="IS">IS</option>
+                        <option value="IG">IG</option>
+                        <option value="TLC">TLC</option>
+                        <option value="altro">Altro</option>
+                    </select>
                 </div>
                 
                 <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #ffc107;">
