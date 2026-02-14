@@ -477,6 +477,7 @@ function updateItemCompletion(itemId) {
     
     let allChecked = true;
     let allPhotosProvided = true;
+    let hasProblems = false;
     
     // Check all required checks
     for (const type of item.types) {
@@ -509,9 +510,17 @@ function updateItemCompletion(itemId) {
         if (item.needsPhoto[`${prefix}_segnaletica`] && (!item.photosByType[`${prefix}_segnaletica`] || item.photosByType[`${prefix}_segnaletica`].length === 0)) {
             allPhotosProvided = false;
         }
+        
+        // Check if this item has any problems (non_funzionante, manomesso, or assente)
+        if (item.checks[`${prefix}_stato`] === 'non_funzionante' ||
+            (type !== 'tem' && item.checks[`${prefix}_sigillo`] === 'manomesso') ||
+            item.checks[`${prefix}_segnaletica`] === 'assente') {
+            hasProblems = true;
+        }
     }
     
     item.completed = allChecked && allPhotosProvided;
+    item.hasProblems = hasProblems;
     
     if (item.completed) {
         item.timestamp = new Date().toISOString();
@@ -523,8 +532,13 @@ function updateItemCompletion(itemId) {
     const itemEl = document.getElementById(`item-${itemId}`);
     if (item.completed) {
         itemEl.classList.add('completed');
+        if (hasProblems) {
+            itemEl.classList.add('problematic');
+        } else {
+            itemEl.classList.remove('problematic');
+        }
     } else {
-        itemEl.classList.remove('completed');
+        itemEl.classList.remove('completed', 'problematic');
     }
 }
 
@@ -537,8 +551,9 @@ function updateMeta(itemId) {
     
     if (item.completed) {
         const date = new Date(item.timestamp);
+        const color = item.hasProblems ? 'var(--danger)' : 'var(--accent)';
         metaEl.innerHTML = `
-            <span style="color: var(--accent)">Verificata</span>
+            <span style="color: ${color}">Verificata</span>
             <span>${date.toLocaleString('it-IT')}</span>
         `;
     } else {
