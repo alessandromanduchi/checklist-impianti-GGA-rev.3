@@ -517,11 +517,20 @@ function updateItemCompletion(itemId) {
             allPhotosProvided = false;
         }
         
-        // Check if this item has any problems (non_funzionante, manomesso, or assente)
-        if (item.checks[`${prefix}_stato`] === 'non_funzionante' ||
-            (type !== 'tem' && item.checks[`${prefix}_sigillo`] === 'manomesso') ||
-            item.checks[`${prefix}_segnaletica`] === 'assente') {
-            hasProblems = true;
+        // Check if this item has ALL checks in worst state (critically failed)
+        // For TEM: stato=non_funzionante AND segnaletica=assente
+        // For others: stato=non_funzionante AND sigillo=manomesso AND segnaletica=assente
+        if (type === 'tem') {
+            if (item.checks[`${prefix}_stato`] === 'non_funzionante' &&
+                item.checks[`${prefix}_segnaletica`] === 'assente') {
+                hasProblems = true;
+            }
+        } else {
+            if (item.checks[`${prefix}_stato`] === 'non_funzionante' &&
+                item.checks[`${prefix}_sigillo`] === 'manomesso' &&
+                item.checks[`${prefix}_segnaletica`] === 'assente') {
+                hasProblems = true;
+            }
         }
     }
     
