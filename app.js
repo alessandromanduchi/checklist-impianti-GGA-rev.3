@@ -9,19 +9,14 @@ let userFeedback = { problems: '', suggestions: '' }; // Store user feedback
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    // Show config modal initially if not configured
-    const savedConfig = localStorage.getItem('verificationConfig');
-    if (savedConfig) {
-        const config = JSON.parse(savedConfig);
-        startNiche = config.startNiche;
-        direction = config.direction;
-        initializeChecklist();
-        loadFromLocalStorage();
-        updateProgress();
-    } else {
-        populateStartNicheSelect();
-        document.getElementById('config-modal').classList.add('show');
-    }
+    // Clear all data on page reload - fresh start every time
+    localStorage.removeItem('checklistData');
+    localStorage.removeItem('malfunctions');
+    localStorage.removeItem('verificationConfig');
+    
+    // Always start with config modal
+    populateStartNicheSelect();
+    document.getElementById('config-modal').classList.add('show');
     
     populateAllNichesSelect();
     registerServiceWorker();
@@ -677,20 +672,31 @@ function loadFromLocalStorage() {
     }
 }
 
+// Clear all data without confirmation (used after PDF generation and on reload)
+function clearAllData() {
+    localStorage.removeItem('checklistData');
+    localStorage.removeItem('malfunctions');
+    localStorage.removeItem('verificationConfig');
+    checklistData = [];
+    malfunctions = [];
+    visibleNicheCount = 10;
+    startNiche = null;
+    direction = null;
+    sortedNicheIndices = [];
+    userFeedback = { problems: '', suggestions: '' };
+    
+    // Show config modal again
+    const checklist = document.getElementById('checklist');
+    if (checklist) {
+        checklist.innerHTML = '';
+    }
+    populateStartNicheSelect();
+    document.getElementById('config-modal').classList.add('show');
+}
+
 function clearData() {
     if (confirm('Sei sicuro di voler cancellare tutti i dati? Questa azione non può essere annullata.')) {
-        localStorage.removeItem('checklistData');
-        localStorage.removeItem('malfunctions');
-        localStorage.removeItem('verificationConfig');
-        checklistData = [];
-        malfunctions = [];
-        visibleNicheCount = 10;
-        startNiche = null;
-        direction = null;
-        sortedNicheIndices = [];
-        // Show config modal again
-        populateStartNicheSelect();
-        document.getElementById('config-modal').classList.add('show');
+        clearAllData();
         showToast('Dati cancellati con successo', 'success');
     }
 }
@@ -996,6 +1002,11 @@ async function actuallyGenerateReport() {
     pdf.save(`report_apprestamenti_${new Date().toISOString().split('T')[0]}.pdf`);
     
     showToast('Report PDF generato con successo', 'success');
+    
+    // Clear all data after PDF generation
+    setTimeout(() => {
+        clearAllData();
+    }, 3000); // Wait 3 seconds to allow user to see success message
 }
 
 // Toast notification
