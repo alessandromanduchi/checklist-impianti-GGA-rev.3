@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.removeItem('verificationConfig');
     
     // Always start with config modal
-    populateStartNicheSelect();
     document.getElementById('config-modal').classList.add('show');
     
     populateAllNichesSelect();
@@ -38,31 +37,18 @@ function registerServiceWorker() {
     }
 }
 
-// Configuration Modal Functions
-function populateStartNicheSelect() {
-    const select = document.getElementById('start-niche');
-    select.innerHTML = '<option value="">Seleziona nicchia...</option>';
-    
-    TECH_NICHES_DATA.forEach((niche, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = `Km ${niche.km} - Binario ${niche.binario}`;
-        select.appendChild(option);
-    });
-}
-
+// Configuration Modal - simplified to only direction
 document.getElementById('config-form')?.addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const startNicheIndex = parseInt(document.getElementById('start-niche').value);
     const selectedDirection = document.getElementById('direction').value;
     
-    startNiche = startNicheIndex;
+    // No longer need startNiche - will start from beginning of sorted list
+    startNiche = null;
     direction = selectedDirection;
     
     // Save configuration
     localStorage.setItem('verificationConfig', JSON.stringify({
-        startNiche,
         direction
     }));
     
@@ -78,8 +64,8 @@ function initializeChecklist() {
     checklistData = [];
     sortedNicheIndices = [];
     
-    // Sort niches based on configuration
-    if (startNiche !== null && direction !== null) {
+    // Sort niches based on direction only
+    if (direction !== null) {
         // Parse km values for sorting
         const parseKm = (km) => {
             const parts = km.split('+');
@@ -90,29 +76,23 @@ function initializeChecklist() {
         const indices = TECH_NICHES_DATA.map((_, idx) => idx);
         
         if (direction === 'vernio') {
-            // Sort descending (towards Vernio 37+259)
+            // Sort ASCENDING (towards Vernio 37+259 is lower km)
+            // Start from 37+259 and go up to 55+742
             indices.sort((a, b) => {
                 const kmA = parseKm(TECH_NICHES_DATA[a].km);
                 const kmB = parseKm(TECH_NICHES_DATA[b].km);
-                return kmB - kmA;
+                return kmA - kmB; // Ascending order
             });
         } else {
-            // Sort ascending (towards San Benedetto 55+742)
+            // Sort DESCENDING (from San Benedetto 55+742 down to 37+259)
             indices.sort((a, b) => {
                 const kmA = parseKm(TECH_NICHES_DATA[a].km);
                 const kmB = parseKm(TECH_NICHES_DATA[b].km);
-                return kmA - kmB;
+                return kmB - kmA; // Descending order
             });
         }
         
-        // Find starting position
-        const startPosition = indices.indexOf(startNiche);
-        if (startPosition !== -1) {
-            // Reorder to start from selected niche
-            sortedNicheIndices = indices.slice(startPosition).concat(indices.slice(0, startPosition));
-        } else {
-            sortedNicheIndices = indices;
-        }
+        sortedNicheIndices = indices;
     } else {
         // Default: use original order
         sortedNicheIndices = TECH_NICHES_DATA.map((_, idx) => idx);
@@ -204,18 +184,30 @@ function updatePaginationButton() {
     }
 }
 
+// Filter Modal Functions
+function openFilterModal() {
+    document.getElementById('filter-modal').classList.add('show');
+}
+
+function closeFilterModal() {
+    document.getElementById('filter-modal').classList.remove('show');
+}
+
 // Filter by equipment type
 function filterByType(type) {
     currentFilter = type;
     
-    // Update button states
-    document.querySelectorAll('.filter-btn').forEach(btn => {
+    // Update button states in filter modal
+    document.querySelectorAll('.filter-option').forEach(btn => {
         btn.classList.remove('active');
     });
     document.querySelector(`[data-filter="${type}"]`).classList.add('active');
     
     // Re-render checklist with filter
     renderFilteredChecklist();
+    
+    // Close filter modal
+    closeFilterModal();
 }
 
 function getFilteredItems() {
@@ -739,14 +731,13 @@ function openNavigationModal() {
     const select = document.getElementById('navigation-niche-select');
     select.innerHTML = '<option value="">Seleziona una nicchia...</option>';
     
-    checklistData.forEach((item, index) => {
-        const niche = TECH_NICHES_DATA.find(n => n.id === item.id);
-        if (niche) {
-            const option = document.createElement('option');
-            option.value = item.id;
-            option.textContent = `Km ${niche.km} - Binario ${niche.binario}`;
-            select.appendChild(option);
-        }
+    // Show ALL niches in current sorted order
+    sortedNicheIndices.forEach((originalIndex) => {
+        const niche = TECH_NICHES_DATA[originalIndex];
+        const option = document.createElement('option');
+        option.value = originalIndex;
+        option.textContent = `Km ${niche.km} - Binario ${niche.binario}`;
+        select.appendChild(option);
     });
     
     document.getElementById('navigation-modal').classList.add('show');
@@ -758,19 +749,85 @@ function closeNavigationModal() {
 
 function navigateToNiche() {
     const select = document.getElementById('navigation-niche-select');
-    const nicheId = select.value;
+    const selectedOriginalIndex = parseInt(select.value);
     
-    if (nicheId) {
-        const element = document.getElementById(`item-${nicheId}`);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            closeNavigationModal();
+    if (!isNaN(selectedOriginalIndex)) {
+        // Find the position of this niche in the current sorted order
+        const positionInSorted = sortedNicheIndices.indexOf(selectedOriginalIndex);
+        
+        if (positionInSorted !== -1) {
+            // Reorder the sorted indices to start from the selected niche
+            sortedNicheIndices = sortedNicheIndices.slice(positionInSorted).concat(sortedNicheIndices.slice(0, positionInSorted));
             
-            // Highlight the element briefly
-            element.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-            setTimeout(() => {
-                element.style.backgroundColor = '';
-            }, 2000);
+            // Reset visible count and re-initialize
+            visibleNicheCount = 10;
+            
+            // Re-initialize checklist with new order
+            const checklist = document.getElementById('checklist');
+            checklist.innerHTML = '';
+            checklistData = [];
+            
+            // Rebuild checklist data with new order
+            sortedNicheIndices.forEach((originalIndex, displayIndex) => {
+                const niche = TECH_NICHES_DATA[originalIndex];
+                const item = {
+                    id: `${niche.km}-${niche.binario}`,
+                    km: niche.km,
+                    binario: niche.binario,
+                    types: niche.types,
+                    completed: false,
+                    checks: {},
+                    photosByType: {},
+                    needsPhoto: {},
+                    timestamp: null,
+                    displayIndex: displayIndex
+                };
+                
+                // Initialize checks based on tech types
+                niche.types.forEach(type => {
+                    if (type === 'idrante') {
+                        item.checks.idrante_stato = null;
+                        item.checks.idrante_sigillo = null;
+                        item.checks.idrante_segnaletica = null;
+                        item.photosByType.idrante_stato = [];
+                        item.photosByType.idrante_sigillo = [];
+                        item.photosByType.idrante_segnaletica = [];
+                        item.needsPhoto.idrante_stato = false;
+                        item.needsPhoto.idrante_sigillo = false;
+                        item.needsPhoto.idrante_segnaletica = false;
+                    }
+                    if (type === 'tem') {
+                        item.checks.tem_stato = null;
+                        item.checks.tem_segnaletica = null;
+                        item.photosByType.tem_stato = [];
+                        item.photosByType.tem_segnaletica = [];
+                        item.needsPhoto.tem_stato = false;
+                        item.needsPhoto.tem_segnaletica = false;
+                    }
+                    if (type === 'quadro_vvf') {
+                        item.checks.quadro_stato = null;
+                        item.checks.quadro_sigillo = null;
+                        item.checks.quadro_segnaletica = null;
+                        item.photosByType.quadro_stato = [];
+                        item.photosByType.quadro_sigillo = [];
+                        item.photosByType.quadro_segnaletica = [];
+                        item.needsPhoto.quadro_stato = false;
+                        item.needsPhoto.quadro_sigillo = false;
+                        item.needsPhoto.quadro_segnaletica = false;
+                    }
+                });
+                
+                checklistData.push(item);
+            });
+            
+            // Re-render with filter
+            renderFilteredChecklist();
+            
+            // Close modal and scroll to top
+            closeNavigationModal();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            showToast(`Verifica iniziata da Km ${TECH_NICHES_DATA[selectedOriginalIndex].km}`, 'success');
         }
     }
 }
