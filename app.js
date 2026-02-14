@@ -6,6 +6,7 @@ let startNiche = null; // Starting niche for verification
 let direction = null; // Direction of verification
 let sortedNicheIndices = []; // Store sorted indices based on config
 let userFeedback = { problems: '', suggestions: '' }; // Store user feedback
+let currentFilter = 'all'; // Equipment type filter: 'all', 'tem', 'idrante', 'quadro_vvf'
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -184,62 +185,81 @@ function initializeChecklist() {
 }
 
 function showMoreNiches() {
-    const checklist = document.getElementById('checklist');
-    const currentVisible = visibleNicheCount;
     visibleNicheCount = Math.min(visibleNicheCount + 10, checklistData.length);
-    
-    // Add next 10 items
-    for (let i = currentVisible; i < visibleNicheCount; i++) {
-        const item = checklistData[i];
-        const itemEl = createChecklistItem(item, i);
-        checklist.appendChild(itemEl);
-        
-        // If this item has saved data, restore it
-        const savedData = localStorage.getItem('checklistData');
-        if (savedData) {
-            const savedItems = JSON.parse(savedData);
-            const savedItem = savedItems.find(si => si.id === item.id);
-            if (savedItem) {
-                Object.assign(item, savedItem);
-                
-                // Update UI
-                Object.keys(item.checks).forEach(checkType => {
-                    if (item.checks[checkType]) {
-                        const radio = document.querySelector(`input[name="${checkType}-${item.id}"][value="${item.checks[checkType]}"]`);
-                        if (radio) {
-                            radio.checked = true;
-                            handleCheck(item.id, checkType, item.checks[checkType]);
-                        }
-                    }
-                });
-                
-                // Display photos
-                Object.keys(item.photosByType).forEach(checkType => {
-                    displayPhotos(item.id, checkType);
-                });
-                
-                if (item.completed) {
-                    itemEl.classList.add('completed');
-                }
-                
-                updateMeta(item.id);
-            }
-        }
-    }
-    
-    updatePaginationButton();
+    renderFilteredChecklist();
 }
 
 function updatePaginationButton() {
     const container = document.getElementById('pagination-container');
-    if (visibleNicheCount < checklistData.length) {
+    const filteredItems = getFilteredItems();
+    const visibleFiltered = filteredItems.filter(item => item.displayIndex < visibleNicheCount);
+    
+    if (visibleFiltered.length < filteredItems.length) {
         container.style.display = 'block';
-        const remaining = checklistData.length - visibleNicheCount;
+        const remaining = filteredItems.length - visibleFiltered.length;
         const toShow = Math.min(10, remaining);
         container.querySelector('button').textContent = `Mostra altre ${toShow}`;
     } else {
         container.style.display = 'none';
     }
+}
+
+// Filter by equipment type
+function filterByType(type) {
+    currentFilter = type;
+    
+    // Update button states
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-filter="${type}"]`).classList.add('active');
+    
+    // Re-render checklist with filter
+    renderFilteredChecklist();
+}
+
+function getFilteredItems() {
+    if (currentFilter === 'all') {
+        return checklistData;
+    }
+    
+    return checklistData.filter(item => item.types.includes(currentFilter));
+}
+
+function renderFilteredChecklist() {
+    const checklist = document.getElementById('checklist');
+    checklist.innerHTML = '';
+    
+    const filteredItems = getFilteredItems();
+    const itemsToShow = filteredItems.filter(item => item.displayIndex < visibleNicheCount);
+    
+    itemsToShow.forEach(item => {
+        const itemEl = createChecklistItem(item, item.displayIndex);
+        checklist.appendChild(itemEl);
+        
+        // Restore state if item was already filled
+        Object.keys(item.checks).forEach(checkType => {
+            if (item.checks[checkType]) {
+                const radio = document.querySelector(`input[name="${checkType}-${item.id}"][value="${item.checks[checkType]}"]`);
+                if (radio) {
+                    radio.checked = true;
+                }
+            }
+        });
+        
+        // Display photos
+        Object.keys(item.photosByType).forEach(checkType => {
+            displayPhotos(item.id, checkType);
+        });
+        
+        if (item.completed) {
+            itemEl.classList.add('completed');
+        }
+        
+        updateMeta(item.id);
+    });
+    
+    updatePaginationButton();
 }
 
 function createChecklistItem(item, index) {

@@ -12,6 +12,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Monitoraggio Gallerie">
     
+    <!-- Apple Touch Icons for iOS Home Screen -->
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="icons/icon-128x128.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,6 +60,23 @@
                 <div class="section-icon">✓</div>
                 Checklist Apprestamenti
             </h2>
+            
+            <!-- Equipment Type Filter -->
+            <div class="filter-container">
+                <button class="filter-btn active" onclick="filterByType('all')" data-filter="all">
+                    Tutti
+                </button>
+                <button class="filter-btn" onclick="filterByType('tem')" data-filter="tem">
+                    TEM
+                </button>
+                <button class="filter-btn" onclick="filterByType('idrante')" data-filter="idrante">
+                    Idranti VVF
+                </button>
+                <button class="filter-btn" onclick="filterByType('quadro_vvf')" data-filter="quadro_vvf">
+                    Quadri VVF
+                </button>
+            </div>
+            
             <div class="checklist" id="checklist"></div>
             <div id="pagination-container" style="display: none; text-align: center; margin-top: 1rem;">
                 <button class="btn btn-secondary" onclick="showMoreNiches()">Mostra altre 10</button>
