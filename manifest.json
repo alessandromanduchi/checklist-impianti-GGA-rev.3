@@ -1,6 +1,6 @@
 {
-  "name": "NicheSafe - Verifica Apprestamenti Tecnologici",
-  "short_name": "NicheSafe",
+  "name": "Monitoraggio Gallerie - Verifica Apprestamenti Tecnologici",
+  "short_name": "Monitoraggio Gallerie",
   "description": "Sistema di verifica apprestamenti tecnologici nelle nicchie di galleria",
   "start_url": "/checklist-impianti-GGA-rev.2/",
   "scope": "/checklist-impianti-GGA-rev.2/",

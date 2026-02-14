@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nichesafe-v1.0.0';
+const CACHE_NAME = 'monitoraggio-gallerie-v1.0.0';
 const BASE_PATH = '/checklist-impianti-GGA-rev.2';
 
 const urlsToCache = [

@@ -1,6 +1,6 @@
 # Screenshots
 
-Questa cartella contiene gli screenshot dell'applicazione NicheSafe per la documentazione.
+Questa cartella contiene gli screenshot dell'applicazione Monitoraggio Gallerie per la documentazione.
 
 ## Screenshot Necessari
 

@@ -1,4 +1,4 @@
-# NicheSafe - Verifica Apprestamenti Tecnologici GGA
+# Monitoraggio Gallerie - Verifica Apprestamenti Tecnologici GGA
 
 Sistema di verifica e monitoraggio degli apprestamenti tecnologici nelle nicchie della Galleria di Base del Brennero (GGA).
 
@@ -12,7 +12,7 @@ Sistema di verifica e monitoraggio degli apprestamenti tecnologici nelle nicchie
 
 ## 📋 Descrizione
 
-NicheSafe è un'applicazione Progressive Web App (PWA) per la verifica sistematica degli apprestamenti tecnologici installati nelle nicchie della galleria. Permette di:
+Monitoraggio Gallerie è un'applicazione Progressive Web App (PWA) per la verifica sistematica degli apprestamenti tecnologici installati nelle nicchie della galleria. Permette di:
 
 - ✅ Verificare **282 nicchie** dotate di apprestamenti tecnologici
 - 🔥 Controllare **138 Idranti VVF**
