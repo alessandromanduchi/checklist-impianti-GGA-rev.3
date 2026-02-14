@@ -209,6 +209,11 @@ body::before {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), transparent);
 }
 
+.check-item.completed.partial {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), transparent);
+}
+
 .item-header {
     display: flex;
     align-items: center;

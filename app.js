@@ -478,24 +478,30 @@ function updateItemCompletion(itemId) {
     let allChecked = true;
     let allPhotosProvided = true;
     let hasProblems = false;
+    let hasAnyCheck = false; // Track if at least one check is done
     
     // Check all required checks
     for (const type of item.types) {
         const prefix = type === 'idrante' ? 'idrante' : (type === 'tem' ? 'tem' : 'quadro');
+        
+        // Check if any check is done for this type
+        if (item.checks[`${prefix}_stato`] || 
+            (type !== 'tem' && item.checks[`${prefix}_sigillo`]) ||
+            item.checks[`${prefix}_segnaletica`]) {
+            hasAnyCheck = true;
+        }
         
         // For TEM, we don't check sigillo
         if (type === 'tem') {
             if (!item.checks[`${prefix}_stato`] || 
                 !item.checks[`${prefix}_segnaletica`]) {
                 allChecked = false;
-                break;
             }
         } else {
             if (!item.checks[`${prefix}_stato`] || 
                 !item.checks[`${prefix}_sigillo`] || 
                 !item.checks[`${prefix}_segnaletica`]) {
                 allChecked = false;
-                break;
             }
         }
         
@@ -519,10 +525,14 @@ function updateItemCompletion(itemId) {
         }
     }
     
-    item.completed = allChecked && allPhotosProvided;
+    // NEW LOGIC: Mark as verified if at least one check is done
+    const isFullyComplete = allChecked && allPhotosProvided;
+    item.completed = hasAnyCheck; // Verified if ANY check is done
+    item.isFullyComplete = isFullyComplete; // Track if ALL checks are done
     item.hasProblems = hasProblems;
+    item.isPartial = hasAnyCheck && !isFullyComplete; // Partial if some checks done but not all
     
-    if (item.completed) {
+    if (item.completed && !item.timestamp) {
         item.timestamp = new Date().toISOString();
     }
     
@@ -532,13 +542,20 @@ function updateItemCompletion(itemId) {
     const itemEl = document.getElementById(`item-${itemId}`);
     if (item.completed) {
         itemEl.classList.add('completed');
-        if (hasProblems) {
+        // Remove all state classes first
+        itemEl.classList.remove('problematic', 'partial');
+        
+        // Apply appropriate state class based on priority:
+        // 1. Partial (yellow) - has incomplete checks
+        // 2. Problematic (red) - fully complete but has problems
+        // 3. Default (green) - fully complete and no problems
+        if (item.isPartial) {
+            itemEl.classList.add('partial');
+        } else if (item.hasProblems) {
             itemEl.classList.add('problematic');
-        } else {
-            itemEl.classList.remove('problematic');
         }
     } else {
-        itemEl.classList.remove('completed', 'problematic');
+        itemEl.classList.remove('completed', 'problematic', 'partial');
     }
 }
 
@@ -551,7 +568,15 @@ function updateMeta(itemId) {
     
     if (item.completed) {
         const date = new Date(item.timestamp);
-        const color = item.hasProblems ? 'var(--danger)' : 'var(--accent)';
+        // Determine color based on state: yellow for partial, red for problems, green for complete
+        let color;
+        if (item.isPartial) {
+            color = '#f59e0b'; // Yellow/amber color for partial
+        } else if (item.hasProblems) {
+            color = 'var(--danger)'; // Red for problems
+        } else {
+            color = 'var(--accent)'; // Green for complete and functional
+        }
         metaEl.innerHTML = `
             <span style="color: ${color}">Verificata</span>
             <span>${date.toLocaleString('it-IT')}</span>
@@ -1095,14 +1120,37 @@ async function actuallyGenerateReport() {
                 
                 pdf.text(`  ${label}:`, 30, y);
                 y += 5;
-                pdf.text(`    - Stato: ${item.checks[`${prefix}_stato`] === 'funzionante' ? 'Funzionante' : 'Non Funzionante'}`, 30, y);
+                
+                // Show stato (always)
+                if (item.checks[`${prefix}_stato`]) {
+                    pdf.text(`    - Stato: ${item.checks[`${prefix}_stato`] === 'funzionante' ? 'Funzionante' : 'Non Funzionante'}`, 30, y);
+                } else {
+                    pdf.setTextColor(150, 150, 150); // Gray for incomplete
+                    pdf.text(`    - Stato: [Non completato]`, 30, y);
+                    pdf.setTextColor(0, 0, 0); // Reset to black
+                }
                 y += 5;
+                
                 // Only show sigillo for non-TEM equipment
                 if (type !== 'tem') {
-                    pdf.text(`    - Sigillo: ${item.checks[`${prefix}_sigillo`] === 'integro' ? 'Integro' : 'Manomesso'}`, 30, y);
+                    if (item.checks[`${prefix}_sigillo`]) {
+                        pdf.text(`    - Sigillo: ${item.checks[`${prefix}_sigillo`] === 'integro' ? 'Integro' : 'Manomesso'}`, 30, y);
+                    } else {
+                        pdf.setTextColor(150, 150, 150); // Gray for incomplete
+                        pdf.text(`    - Sigillo: [Non completato]`, 30, y);
+                        pdf.setTextColor(0, 0, 0); // Reset to black
+                    }
                     y += 5;
                 }
-                pdf.text(`    - Segnaletica: ${item.checks[`${prefix}_segnaletica`] === 'presente' ? 'Presente' : 'Assente'}`, 30, y);
+                
+                // Show segnaletica (always)
+                if (item.checks[`${prefix}_segnaletica`]) {
+                    pdf.text(`    - Segnaletica: ${item.checks[`${prefix}_segnaletica`] === 'presente' ? 'Presente' : 'Assente'}`, 30, y);
+                } else {
+                    pdf.setTextColor(150, 150, 150); // Gray for incomplete
+                    pdf.text(`    - Segnaletica: [Non completato]`, 30, y);
+                    pdf.setTextColor(0, 0, 0); // Reset to black
+                }
                 y += 5;
                 
                 // Add photos for this check type if present
