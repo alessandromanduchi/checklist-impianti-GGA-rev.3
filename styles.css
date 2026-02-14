@@ -339,6 +339,11 @@ body::before {
     z-index: 1000;
 }
 
+.fab-container.fab-left {
+    left: 20px;
+    right: auto;
+}
+
 .fab {
     width: 64px;
     height: 64px;
@@ -355,9 +360,25 @@ body::before {
     transition: all 0.3s ease;
 }
 
+.fab.fab-warning {
+    background: linear-gradient(135deg, var(--danger), #dc2626);
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+}
+
+.fab.fab-pdf {
+    background: linear-gradient(135deg, var(--accent), #16a34a);
+    box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+    font-size: 14px;
+    font-weight: 700;
+}
+
 .fab:hover {
     transform: scale(1.1);
     box-shadow: 0 6px 25px rgba(239, 68, 68, 0.6);
+}
+
+.fab.fab-pdf:hover {
+    box-shadow: 0 6px 25px rgba(34, 197, 94, 0.6);
 }
 
 /* Malfunction Modal */

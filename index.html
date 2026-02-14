@@ -54,6 +54,9 @@
                 Checklist Apprestamenti
             </h2>
             <div class="checklist" id="checklist"></div>
+            <div id="pagination-container" style="display: none; text-align: center; margin-top: 1rem;">
+                <button class="btn btn-secondary" onclick="showMoreNiches()">Mostra altre 10</button>
+            </div>
         </div>
         
         <div class="card">
@@ -62,15 +65,17 @@
                 Azioni
             </h2>
             <div class="actions">
-                <button class="btn btn-secondary btn-block" onclick="clearData()">🗑️ Cancella Dati</button>
-                <button class="btn btn-success btn-block" onclick="generateReport()">📄 Genera Report PDF</button>
+                <button class="btn btn-secondary btn-block" onclick="clearData()">Cancella Dati</button>
             </div>
         </div>
     </div>
     
-    <!-- Floating Action Button -->
+    <!-- Floating Action Buttons -->
     <div class="fab-container">
-        <button class="fab" onclick="openMalfunctionModal()">⚠️</button>
+        <button class="fab fab-warning" onclick="openMalfunctionModal()">⚠️</button>
+    </div>
+    <div class="fab-container fab-left">
+        <button class="fab fab-pdf" onclick="generateReport()">PDF</button>
     </div>
     
     <!-- Malfunction Modal -->
@@ -125,6 +130,59 @@
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-block">Salva Segnalazione</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Feedback Modal -->
+    <div class="modal" id="feedback-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Feedback Utilizzo Applicazione</h3>
+                <button class="modal-close" onclick="closeFeedbackModal()">×</button>
+            </div>
+            
+            <form id="feedback-form">
+                <div class="form-group">
+                    <label class="form-label">Hai riscontrato problemi durante l'utilizzo?</label>
+                    <textarea class="form-input" id="feedback-problems" rows="3" placeholder="Descrivi eventuali problemi riscontrati..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Hai suggerimenti per migliorare l'applicazione?</label>
+                    <textarea class="form-input" id="feedback-suggestions" rows="3" placeholder="Inserisci eventuali suggerimenti..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Genera Report PDF</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Configuration Modal -->
+    <div class="modal show" id="config-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Configurazione Verifica</h3>
+            </div>
+            
+            <form id="config-form">
+                <div class="form-group">
+                    <label class="form-label">Nicchia di Partenza *</label>
+                    <select class="form-select" id="start-niche" required>
+                        <option value="">Seleziona nicchia...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Direzione di Verifica *</label>
+                    <select class="form-select" id="direction" required>
+                        <option value="">Seleziona direzione...</option>
+                        <option value="vernio">Verso Vernio (37+259)</option>
+                        <option value="san-benedetto">Verso San Benedetto Val di Sambro (55+742)</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Inizia Verifica</button>
             </form>
         </div>
     </div>
