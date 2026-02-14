@@ -1,0 +1,43 @@
+{
+  "name": "checklist-impianti-gga",
+  "version": "1.0.0",
+  "description": "Sistema di verifica apprestamenti tecnologici Galleria di Base del Brennero (GGA)",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx http-server -p 8000 -o",
+    "generate-icons": "python3 generate-icons.py",
+    "deploy": "gh-pages -d ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alessandromanduchi/checklist-impianti-GGA-rev.2.git"
+  },
+  "keywords": [
+    "pwa",
+    "galleria",
+    "brennero",
+    "gga",
+    "verifica",
+    "apprestamenti",
+    "tecnologici",
+    "sicurezza",
+    "ferroviaria",
+    "idranti",
+    "tem",
+    "vvf"
+  ],
+  "author": "Alessandro Manduchi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alessandromanduchi/checklist-impianti-GGA-rev.2/issues"
+  },
+  "homepage": "https://alessandromanduchi.github.io/checklist-impianti-GGA-rev.2/",
+  "devDependencies": {
+    "gh-pages": "^6.0.0",
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

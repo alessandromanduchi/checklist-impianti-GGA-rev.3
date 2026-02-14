@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>NicheSafe - Verifica Apprestamenti Tecnologici</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NicheSafe">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- PDF generation library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">NicheSafe</h1>
+            <p class="tagline">Verifica Apprestamenti Tecnologici Galleria</p>
+        </div>
+        
+        <div class="status-bar">
+            <div class="status-badge status-online">
+                <div class="status-dot"></div>
+                <span>Sistema Attivo</span>
+            </div>
+            <div class="status-badge">
+                <span id="niche-count">0 Nicchie</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="progress-text">0 / 0 nicchie verificate</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="section-title">
+                <div class="section-icon">✓</div>
+                Checklist Apprestamenti
+            </h2>
+            <div class="checklist" id="checklist"></div>
+        </div>
+        
+        <div class="card">
+            <h2 class="section-title">
+                <div class="section-icon">📊</div>
+                Azioni
+            </h2>
+            <div class="actions">
+                <button class="btn btn-secondary btn-block" onclick="clearData()">🗑️ Cancella Dati</button>
+                <button class="btn btn-success btn-block" onclick="generateReport()">📄 Genera Report PDF</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Floating Action Button -->
+    <div class="fab-container">
+        <button class="fab" onclick="openMalfunctionModal()">⚠️</button>
+    </div>
+    
+    <!-- Malfunction Modal -->
+    <div class="modal" id="malfunction-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Segnala Malfunzionamento</h3>
+                <button class="modal-close" onclick="closeMalfunctionModal()">×</button>
+            </div>
+            
+            <form id="malfunction-form">
+                <div class="form-group">
+                    <label class="form-label">Tipo di Malfunzionamento *</label>
+                    <select class="form-select" id="malfunction-type" required onchange="updateMalfunctionForm()">
+                        <option value="">Seleziona...</option>
+                        <option value="camminamento">Camminamento</option>
+                        <option value="corrimano">Corrimano</option>
+                        <option value="illuminazione">Impianto di Illuminazione</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="illuminazione-detail" style="display: none;">
+                    <label class="form-label">Tipo di Guasto Illuminazione *</label>
+                    <select class="form-select" id="illuminazione-fault-type">
+                        <option value="">Seleziona...</option>
+                        <option value="fungo_blu">Fungo Blu</option>
+                        <option value="corpi_illuminanti">Corpi Illuminanti</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="corpi-count-group" style="display: none;">
+                    <label class="form-label">Numero Corpi Illuminanti Non Funzionanti *</label>
+                    <input type="number" class="form-input" id="corpi-count" min="1" placeholder="Es: 3">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Progressiva Chilometrica *</label>
+                    <select class="form-select" id="malfunction-km" required>
+                        <option value="">Seleziona nicchia...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Foto *</label>
+                    <input type="file" class="form-input" id="malfunction-photo" accept="image/*" capture="environment" required>
+                    <div id="malfunction-photo-preview" class="photo-preview"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Note Aggiuntive</label>
+                    <textarea class="form-input" id="malfunction-notes" rows="3" placeholder="Inserisci eventuali note..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Salva Segnalazione</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+    
+    <!-- Load data and app script -->
+    <script src="niches-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
