@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>Monitoraggio Gallerie - Verifica Apprestamenti Tecnologici</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Monitoraggio Gallerie">
+    
+    <!-- Apple Touch Icons for iOS Home Screen -->
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="icons/icon-128x128.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- PDF generation library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">Monitoraggio Gallerie</h1>
+            <p class="tagline">Verifica Apprestamenti Tecnologici Galleria</p>
+        </div>
+        
+        <div class="status-bar">
+            <div class="status-badge status-online">
+                <div class="status-dot"></div>
+                <span>Sistema Attivo</span>
+            </div>
+            <div class="status-badge">
+                <span id="niche-count">0 Nicchie</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="progress-text">0 / 0 nicchie verificate</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="section-title">
+                <div class="section-icon">✓</div>
+                Checklist Apprestamenti
+            </h2>
+            
+            <div class="checklist" id="checklist"></div>
+            <div id="pagination-container" style="display: none; text-align: center; margin-top: 1rem;">
+                <button class="btn btn-secondary" onclick="showMoreNiches()">Mostra altre 10</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="section-title">
+                <div class="section-icon">📊</div>
+                Azioni
+            </h2>
+            <div class="actions">
+                <button class="btn btn-secondary btn-block" onclick="clearData()">Cancella Dati</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Floating Action Buttons -->
+    <div class="fab-container fab-left">
+        <button class="fab fab-pdf" onclick="generateReport()">PDF</button>
+    </div>
+    <div class="fab-container fab-right">
+        <button class="fab fab-navigate" onclick="openNavigationModal()">📍</button>
+    </div>
+    <div class="fab-container fab-top-right">
+        <button class="fab fab-filter" onclick="openFilterModal()">🔍</button>
+    </div>
+    
+    <!-- Filter Modal -->
+    <div class="modal" id="filter-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Filtra Apprestamenti</h3>
+                <button class="modal-close" onclick="closeFilterModal()">×</button>
+            </div>
+            
+            <div class="filter-options">
+                <button class="filter-option active" onclick="filterByType('all')" data-filter="all">
+                    <span class="filter-icon">📋</span>
+                    <span class="filter-label">Tutti</span>
+                </button>
+                <button class="filter-option" onclick="filterByType('tem')" data-filter="tem">
+                    <span class="filter-icon">⚡</span>
+                    <span class="filter-label">TEM</span>
+                </button>
+                <button class="filter-option" onclick="filterByType('idrante')" data-filter="idrante">
+                    <span class="filter-icon">🚿</span>
+                    <span class="filter-label">Idranti VVF</span>
+                </button>
+                <button class="filter-option" onclick="filterByType('quadro_vvf')" data-filter="quadro_vvf">
+                    <span class="filter-icon">⚙️</span>
+                    <span class="filter-label">Quadri VVF</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation Modal -->
+    <div class="modal" id="navigation-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Vai alla Nicchia</h3>
+                <button class="modal-close" onclick="closeNavigationModal()">×</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Seleziona Nicchia</label>
+                <select class="form-select" id="navigation-niche-select" onchange="navigateToNiche()">
+                    <option value="">Seleziona una nicchia...</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Operator Name Modal -->
+    <div class="modal" id="operator-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Informazioni Operatore</h3>
+            </div>
+            
+            <form id="operator-form">
+                <div class="form-group">
+                    <label class="form-label">Nome *</label>
+                    <input type="text" class="form-input" id="operator-firstname" required placeholder="Inserisci il tuo nome">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Cognome *</label>
+                    <input type="text" class="form-input" id="operator-lastname" required placeholder="Inserisci il tuo cognome">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Settore *</label>
+                    <select class="form-select" id="operator-sector" required>
+                        <option value="">Seleziona settore...</option>
+                        <option value="LV">LV</option>
+                        <option value="TE">TE</option>
+                        <option value="IS">IS</option>
+                        <option value="IG">IG</option>
+                        <option value="TLC">TLC</option>
+                        <option value="altro">Altro</option>
+                    </select>
+                </div>
+                
+                <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #ffc107;">
+                    <p style="margin: 0; color: #856404; font-size: 0.9rem;">
+                        <strong>📧 Promemoria:</strong><br>
+                        Il report deve essere inviato a: <strong>a.manduchi@rfi.it</strong>
+                    </p>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Procedi con Generazione PDF</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Malfunction Modal -->
+    <div class="modal" id="malfunction-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Segnala Malfunzionamento</h3>
+                <button class="modal-close" onclick="closeMalfunctionModal()">×</button>
+            </div>
+            
+            <form id="malfunction-form">
+                <div class="form-group">
+                    <label class="form-label">Tipo di Malfunzionamento *</label>
+                    <select class="form-select" id="malfunction-type" required onchange="updateMalfunctionForm()">
+                        <option value="">Seleziona...</option>
+                        <option value="camminamento">Camminamento</option>
+                        <option value="corrimano">Corrimano</option>
+                        <option value="illuminazione">Impianto di Illuminazione</option>
+                        <option value="segnaletica_generale">Segnaletica generale</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="illuminazione-detail" style="display: none;">
+                    <label class="form-label">Tipo di Guasto Illuminazione *</label>
+                    <select class="form-select" id="illuminazione-fault-type">
+                        <option value="">Seleziona...</option>
+                        <option value="fungo_blu">Fungo Blu</option>
+                        <option value="corpi_illuminanti">Corpi Illuminanti</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="corpi-count-group" style="display: none;">
+                    <label class="form-label">Numero Corpi Illuminanti Non Funzionanti *</label>
+                    <input type="number" class="form-input" id="corpi-count" min="1" placeholder="Es: 3">
+                </div>
+                
+                <div class="form-group" id="qe-riferimento-group" style="display: none;">
+                    <label class="form-label">QE di riferimento</label>
+                    <select class="form-select" id="qe-riferimento" onchange="updateRamoDiRiferimento()">
+                        <option value="">Seleziona QE...</option>
+                    </select>
+                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); font-style: italic;">
+                        Campo riservato a personale IG
+                    </div>
+                </div>
+                
+                <div class="form-group" id="ramo-riferimento-group" style="display: none;">
+                    <label class="form-label">Ramo di riferimento</label>
+                    <select class="form-select" id="ramo-riferimento">
+                        <option value="">Seleziona ramo...</option>
+                        <option value="destro">Destro</option>
+                        <option value="sinistro">Sinistro</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Progressiva Chilometrica *</label>
+                    <select class="form-select" id="malfunction-km" required>
+                        <option value="">Seleziona nicchia...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Foto *</label>
+                    <input type="file" class="form-input" id="malfunction-photo" accept="image/*" capture="environment" required>
+                    <div id="malfunction-photo-preview" class="photo-preview"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Note Aggiuntive</label>
+                    <textarea class="form-input" id="malfunction-notes" rows="3" placeholder="Inserisci eventuali note..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Salva Segnalazione</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Feedback Modal -->
+    <div class="modal" id="feedback-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Feedback Utilizzo Applicazione</h3>
+                <button class="modal-close" onclick="closeFeedbackModal()">×</button>
+            </div>
+            
+            <form id="feedback-form">
+                <div class="form-group">
+                    <label class="form-label">Hai riscontrato problemi durante l'utilizzo?</label>
+                    <textarea class="form-input" id="feedback-problems" rows="3" placeholder="Descrivi eventuali problemi riscontrati..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Hai suggerimenti per migliorare l'applicazione?</label>
+                    <textarea class="form-input" id="feedback-suggestions" rows="3" placeholder="Inserisci eventuali suggerimenti..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Genera Report PDF</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Configuration Modal -->
+    <div class="modal show" id="config-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Configurazione Verifica</h3>
+            </div>
+            
+            <form id="config-form">
+                <div class="form-group">
+                    <label class="form-label">Punto di Partenza *</label>
+                    <select class="form-select" id="direction" required>
+                        <option value="">Seleziona punto di partenza...</option>
+                        <option value="vernio">Vernio (37+259) - Ordine Crescente</option>
+                        <option value="san-benedetto">San Benedetto Val di Sambro (55+742) - Ordine Decrescente</option>
+                    </select>
+                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+                        <p style="margin: 0.25rem 0;">• <strong>Vernio</strong>: verifica in ordine crescente di km (37+259 → 55+742)</p>
+                        <p style="margin: 0.25rem 0;">• <strong>San Benedetto</strong>: verifica in ordine decrescente di km (55+742 → 37+259)</p>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Inizia Verifica</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Generic Photo Modal -->
+    <div class="modal" id="generic-photo-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📷 Carica Foto Generica</h3>
+                <button class="modal-close" onclick="closeGenericPhotoModal()">×</button>
+            </div>
+            
+            <form id="generic-photo-form">
+                <div class="form-group">
+                    <label class="form-label">Nicchia/Posizione *</label>
+                    <select class="form-select" id="generic-photo-location" required>
+                        <option value="">Seleziona posizione...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Fotografia *</label>
+                    <input type="file" class="form-control" id="generic-photo-file" accept="image/*" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Descrizione Problema/Osservazione *</label>
+                    <textarea class="form-control" id="generic-photo-description" rows="4" 
+                        placeholder="Descrivi il problema o l'osservazione riscontrata..." required></textarea>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeGenericPhotoModal()">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Salva Foto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+    
+    <!-- Load data and app script -->
+    <script src="niches-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
