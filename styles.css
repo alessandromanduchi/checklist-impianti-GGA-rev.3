@@ -404,6 +404,12 @@ body::before {
     bottom: auto;
 }
 
+.fab-container.fab-left-top {
+    left: 20px;
+    bottom: 100px; /* Position above the PDF button */
+    right: auto;
+}
+
 .fab {
     width: 64px;
     height: 64px;
@@ -444,6 +450,12 @@ body::before {
     font-size: 24px;
 }
 
+.fab.fab-photo {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+    font-size: 24px;
+}
+
 .fab:hover {
     transform: scale(1.1);
     box-shadow: 0 6px 25px rgba(239, 68, 68, 0.6);
@@ -459,6 +471,10 @@ body::before {
 
 .fab.fab-filter:hover {
     box-shadow: 0 6px 25px rgba(139, 92, 246, 0.6);
+}
+
+.fab.fab-photo:hover {
+    box-shadow: 0 6px 25px rgba(245, 158, 11, 0.6);
 }
 
 /* Filter Modal Styles */

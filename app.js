@@ -1,6 +1,7 @@
 // State
 let checklistData = [];
 let malfunctions = [];
+let genericPhotos = []; // Store generic photos with descriptions
 let visibleNicheCount = 10; // Pagination: show 10 niches at a time
 let startNiche = null; // Starting niche for verification
 let direction = null; // Direction of verification
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Clear all data on page reload - fresh start every time
     localStorage.removeItem('checklistData');
     localStorage.removeItem('malfunctions');
+    localStorage.removeItem('genericPhotos');
     localStorage.removeItem('verificationConfig');
     
     // Always start with config modal
@@ -906,6 +908,64 @@ function saveMalfunctionsToLocalStorage() {
     localStorage.setItem('malfunctions', JSON.stringify(malfunctions));
 }
 
+function saveGenericPhotosToLocalStorage() {
+    localStorage.setItem('genericPhotos', JSON.stringify(genericPhotos));
+}
+
+// Generic Photo Modal Functions
+function openGenericPhotoModal() {
+    // Populate location dropdown with all verified niches
+    const locationSelect = document.getElementById('generic-photo-location');
+    locationSelect.innerHTML = '<option value="">Seleziona posizione...</option>';
+    
+    // Add all niches from the data
+    sortedNicheIndices.forEach(originalIndex => {
+        const niche = TECH_NICHES_DATA[originalIndex];
+        const option = document.createElement('option');
+        option.value = `${niche.km}-${niche.binario}`;
+        option.textContent = `Km ${niche.km} - Binario ${niche.binario}`;
+        locationSelect.appendChild(option);
+    });
+    
+    document.getElementById('generic-photo-modal').classList.add('show');
+}
+
+function closeGenericPhotoModal() {
+    document.getElementById('generic-photo-modal').classList.remove('show');
+    document.getElementById('generic-photo-form').reset();
+}
+
+document.getElementById('generic-photo-form')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const location = document.getElementById('generic-photo-location').value;
+    const photoInput = document.getElementById('generic-photo-file');
+    const description = document.getElementById('generic-photo-description').value;
+    
+    if (!photoInput.files[0]) {
+        showToast('Per favore allega una foto', 'error');
+        return;
+    }
+    
+    const genericPhoto = {
+        id: Date.now().toString(),
+        location: location,
+        description: description,
+        timestamp: new Date().toISOString()
+    };
+    
+    // Read photo
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        genericPhoto.photo = e.target.result;
+        genericPhotos.push(genericPhoto);
+        saveGenericPhotosToLocalStorage();
+        showToast('Foto generica salvata con successo', 'success');
+        closeGenericPhotoModal();
+    };
+    reader.readAsDataURL(photoInput.files[0]);
+});
+
 function loadFromLocalStorage() {
     const saved = localStorage.getItem('checklistData');
     if (saved) {
@@ -948,15 +1008,22 @@ function loadFromLocalStorage() {
     if (savedMalfunctions) {
         malfunctions = JSON.parse(savedMalfunctions);
     }
+    
+    const savedGenericPhotos = localStorage.getItem('genericPhotos');
+    if (savedGenericPhotos) {
+        genericPhotos = JSON.parse(savedGenericPhotos);
+    }
 }
 
 // Clear all data without confirmation (used after PDF generation and on reload)
 function clearAllData() {
     localStorage.removeItem('checklistData');
     localStorage.removeItem('malfunctions');
+    localStorage.removeItem('genericPhotos');
     localStorage.removeItem('verificationConfig');
     checklistData = [];
     malfunctions = [];
+    genericPhotos = [];
     visibleNicheCount = 10;
     startNiche = null;
     direction = null;
@@ -1155,35 +1222,49 @@ async function actuallyGenerateReport() {
     
     let y = 20;
     
-    // Header
-    pdf.setFontSize(20);
+    // Header with box
+    pdf.setFillColor(15, 23, 42); // Dark background
+    pdf.rect(10, 10, 190, 30, 'F');
+    pdf.setTextColor(255, 255, 255); // White text
+    pdf.setFontSize(18);
     pdf.setFont(undefined, 'bold');
-    pdf.text('REPORT VERIFICA APPRESTAMENTI TECNOLOGICI', 105, y, { align: 'center' });
-    y += 15;
-    
-    pdf.setFontSize(12);
-    pdf.setFont(undefined, 'normal');
-    pdf.text(`Data Report: ${new Date().toLocaleString('it-IT')}`, 20, y);
-    y += 7;
-    pdf.text(`Operatore: ${operatorInfo.firstName} ${operatorInfo.lastName}`, 20, y);
-    y += 7;
-    pdf.text(`Settore: ${operatorInfo.sector}`, 20, y);
-    y += 10;
-    
-    // Only count completed items
-    const verifiedItems = checklistData.filter(i => i.completed);
-    pdf.text(`Nicchie Verificate: ${verifiedItems.length}`, 20, y);
-    y += 15;
-    
-    // Summary
-    pdf.setFontSize(14);
-    pdf.setFont(undefined, 'bold');
-    pdf.text('RIEPILOGO', 20, y);
-    y += 10;
-    
+    pdf.text('REPORT VERIFICA APPRESTAMENTI TECNOLOGICI', 105, y + 5, { align: 'center' });
     pdf.setFontSize(10);
     pdf.setFont(undefined, 'normal');
+    pdf.text('Galleria Grande Appenino', 105, y + 12, { align: 'center' });
+    y += 25;
     
+    // Reset text color
+    pdf.setTextColor(0, 0, 0);
+    y += 10;
+    
+    // Info box
+    pdf.setDrawColor(59, 130, 246); // Blue border
+    pdf.setLineWidth(0.5);
+    pdf.rect(15, y, 180, 25);
+    y += 7;
+    
+    pdf.setFontSize(10);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Data Report:', 20, y);
+    pdf.setFont(undefined, 'normal');
+    pdf.text(new Date().toLocaleString('it-IT'), 50, y);
+    y += 6;
+    
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Operatore:', 20, y);
+    pdf.setFont(undefined, 'normal');
+    pdf.text(`${operatorInfo.firstName} ${operatorInfo.lastName}`, 50, y);
+    y += 6;
+    
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Settore:', 20, y);
+    pdf.setFont(undefined, 'normal');
+    pdf.text(operatorInfo.sector, 50, y);
+    y += 10;
+    
+    // Statistics section
+    const verifiedItems = checklistData.filter(i => i.completed);
     const problematicItems = verifiedItems.filter(item => {
         for (const type of item.types) {
             const prefix = type === 'idrante' ? 'idrante' : (type === 'tem' ? 'tem' : 'quadro');
@@ -1196,7 +1277,30 @@ async function actuallyGenerateReport() {
         return false;
     });
     
-    pdf.text(`Nicchie con problemi: ${problematicItems.length}`, 20, y);
+    // Statistics boxes
+    pdf.setDrawColor(34, 197, 94); // Green border
+    pdf.setFillColor(220, 252, 231); // Light green
+    pdf.rect(15, y, 85, 20, 'FD');
+    pdf.setFontSize(12);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Nicchie Verificate', 57.5, y + 7, { align: 'center' });
+    pdf.setFontSize(16);
+    pdf.text(verifiedItems.length.toString(), 57.5, y + 15, { align: 'center' });
+    
+    pdf.setDrawColor(239, 68, 68); // Red border
+    pdf.setFillColor(254, 226, 226); // Light red
+    pdf.rect(110, y, 85, 20, 'FD');
+    pdf.setFontSize(12);
+    pdf.text('Nicchie con Problemi', 152.5, y + 7, { align: 'center' });
+    pdf.setFontSize(16);
+    pdf.text(problematicItems.length.toString(), 152.5, y + 15, { align: 'center' });
+    
+    y += 25;
+    
+    // Separator line
+    pdf.setDrawColor(100, 100, 100);
+    pdf.setLineWidth(0.5);
+    pdf.line(15, y, 195, y);
     y += 10;
     
     // Add section for non-functional equipment
@@ -1211,11 +1315,20 @@ async function actuallyGenerateReport() {
     });
     
     if (nonFunctionalItems.length > 0) {
-        y += 5;
-        pdf.setFontSize(14);
+        if (y > 250) {
+            pdf.addPage();
+            y = 20;
+        }
+        
+        // Section header with background
+        pdf.setFillColor(239, 68, 68); // Red background
+        pdf.rect(15, y, 180, 10, 'F');
+        pdf.setTextColor(255, 255, 255); // White text
+        pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('APPRESTAMENTI NON FUNZIONANTI', 20, y);
-        y += 10;
+        pdf.text('⚠ APPRESTAMENTI NON FUNZIONANTI', 20, y + 7);
+        pdf.setTextColor(0, 0, 0); // Reset to black
+        y += 15;
         
         pdf.setFontSize(10);
         pdf.setFont(undefined, 'normal');
@@ -1514,6 +1627,70 @@ async function actuallyGenerateReport() {
                     y += 10;
                 }
             }
+        }
+    }
+    
+    // Generic Photos Section
+    if (genericPhotos.length > 0) {
+        if (y > 250) {
+            pdf.addPage();
+            y = 20;
+        }
+        
+        y += 10;
+        pdf.setFontSize(14);
+        pdf.setFont(undefined, 'bold');
+        pdf.text('FOTO GENERICHE E OSSERVAZIONI', 20, y);
+        y += 10;
+        
+        pdf.setFontSize(10);
+        pdf.setFont(undefined, 'normal');
+        
+        for (const gp of genericPhotos) {
+            if (y > 270) {
+                pdf.addPage();
+                y = 20;
+            }
+            
+            pdf.setFont(undefined, 'bold');
+            pdf.text(`Posizione: ${gp.location}`, 20, y);
+            y += 5;
+            
+            pdf.setFont(undefined, 'normal');
+            pdf.text(`Data: ${new Date(gp.timestamp).toLocaleString('it-IT')}`, 25, y);
+            y += 5;
+            
+            // Description with text wrapping
+            const descriptionLines = pdf.splitTextToSize(`Descrizione: ${gp.description}`, 170);
+            descriptionLines.forEach(line => {
+                if (y > 280) {
+                    pdf.addPage();
+                    y = 20;
+                }
+                pdf.text(line, 25, y);
+                y += 5;
+            });
+            
+            // Add photo
+            if (gp.photo) {
+                if (y > 200) {
+                    pdf.addPage();
+                    y = 20;
+                }
+                
+                try {
+                    const imgWidth = 80;
+                    const imgHeight = 60;
+                    pdf.addImage(gp.photo, 'JPEG', 25, y, imgWidth, imgHeight);
+                    y += imgHeight + 10;
+                } catch (error) {
+                    console.error('Error adding generic photo to PDF:', error);
+                    pdf.text('[Errore caricamento foto]', 25, y);
+                    y += 10;
+                }
+            }
+            
+            y += 5;
         }
     }
     

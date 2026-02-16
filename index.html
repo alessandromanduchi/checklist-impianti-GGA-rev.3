@@ -85,6 +85,9 @@
     <div class="fab-container fab-left">
         <button class="fab fab-pdf" onclick="generateReport()">PDF</button>
     </div>
+    <div class="fab-container fab-left-top">
+        <button class="fab fab-photo" onclick="openGenericPhotoModal()" title="Carica Foto Generica">📷</button>
+    </div>
     <div class="fab-container fab-right">
         <button class="fab fab-navigate" onclick="openNavigationModal()">📍</button>
     </div>
@@ -303,6 +306,41 @@
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-block">Inizia Verifica</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Generic Photo Modal -->
+    <div class="modal" id="generic-photo-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📷 Carica Foto Generica</h3>
+                <button class="modal-close" onclick="closeGenericPhotoModal()">×</button>
+            </div>
+            
+            <form id="generic-photo-form">
+                <div class="form-group">
+                    <label class="form-label">Nicchia/Posizione *</label>
+                    <select class="form-select" id="generic-photo-location" required>
+                        <option value="">Seleziona posizione...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Fotografia *</label>
+                    <input type="file" class="form-control" id="generic-photo-file" accept="image/*" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Descrizione Problema/Osservazione *</label>
+                    <textarea class="form-control" id="generic-photo-description" rows="4" 
+                        placeholder="Descrivi il problema o l'osservazione riscontrata..." required></textarea>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeGenericPhotoModal()">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Salva Foto</button>
+                </div>
             </form>
         </div>
     </div>
