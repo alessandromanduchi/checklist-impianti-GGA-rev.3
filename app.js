@@ -1363,11 +1363,21 @@ async function actuallyGenerateReport() {
     
     // Add feedback if provided
     if (userFeedback.problems || userFeedback.suggestions) {
+        if (y > 250) {
+            pdf.addPage();
+            y = 20;
+        }
+        
         y += 5;
-        pdf.setFontSize(14);
+        // Section header with background
+        pdf.setFillColor(139, 92, 246); // Purple background
+        pdf.rect(15, y, 180, 10, 'F');
+        pdf.setTextColor(255, 255, 255); // White text
+        pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('FEEDBACK OPERATORE', 20, y);
-        y += 10;
+        pdf.text('💬 FEEDBACK OPERATORE', 20, y + 7);
+        pdf.setTextColor(0, 0, 0); // Reset to black
+        y += 15;
         
         pdf.setFontSize(10);
         pdf.setFont(undefined, 'normal');
@@ -1418,10 +1428,15 @@ async function actuallyGenerateReport() {
         }
         
         y += 10;
-        pdf.setFontSize(14);
+        // Section header with background
+        pdf.setFillColor(59, 130, 246); // Blue background
+        pdf.rect(15, y, 180, 10, 'F');
+        pdf.setTextColor(255, 255, 255); // White text
+        pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('DETTAGLIO VERIFICHE', 20, y);
-        y += 10;
+        pdf.text('📋 DETTAGLIO VERIFICHE', 20, y + 7);
+        pdf.setTextColor(0, 0, 0); // Reset to black
+        y += 15;
         
         pdf.setFontSize(10);
         pdf.setFont(undefined, 'normal');
@@ -1544,10 +1559,15 @@ async function actuallyGenerateReport() {
         }
         
         y += 10;
-        pdf.setFontSize(14);
+        // Section header with background
+        pdf.setFillColor(245, 158, 11); // Orange background
+        pdf.rect(15, y, 180, 10, 'F');
+        pdf.setTextColor(255, 255, 255); // White text
+        pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('SEGNALAZIONI MALFUNZIONAMENTI', 20, y);
-        y += 10;
+        pdf.text('⚠️ SEGNALAZIONI MALFUNZIONAMENTI', 20, y + 7);
+        pdf.setTextColor(0, 0, 0); // Reset to black
+        y += 15;
         
         pdf.setFontSize(10);
         pdf.setFont(undefined, 'normal');
@@ -1638,10 +1658,15 @@ async function actuallyGenerateReport() {
         }
         
         y += 10;
-        pdf.setFontSize(14);
+        // Section header with background
+        pdf.setFillColor(34, 197, 94); // Green background
+        pdf.rect(15, y, 180, 10, 'F');
+        pdf.setTextColor(255, 255, 255); // White text
+        pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('FOTO GENERICHE E OSSERVAZIONI', 20, y);
-        y += 10;
+        pdf.text('📷 FOTO GENERICHE E OSSERVAZIONI', 20, y + 7);
+        pdf.setTextColor(0, 0, 0); // Reset to black
+        y += 15;
         
         pdf.setFontSize(10);
         pdf.setFont(undefined, 'normal');
