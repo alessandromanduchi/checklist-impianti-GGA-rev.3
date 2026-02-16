@@ -681,6 +681,9 @@ document.getElementById('malfunction-form')?.addEventListener('submit', async fu
         }
     }
     
+    // Close modal immediately
+    closeMalfunctionModal();
+    
     // Read photo
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -688,7 +691,6 @@ document.getElementById('malfunction-form')?.addEventListener('submit', async fu
         malfunctions.push(malfunction);
         saveMalfunctionsToLocalStorage();
         showToast('Segnalazione salvata con successo', 'success');
-        closeMalfunctionModal();
     };
     reader.readAsDataURL(photoInput.files[0]);
 });
