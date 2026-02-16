@@ -1093,6 +1093,17 @@ let operatorInfo = {
 };
 
 function openOperatorModal() {
+    // Check if any malfunction has QE di riferimento (for IG personnel)
+    const hasQEReference = malfunctions.some(m => m.qeRiferimento);
+    
+    // Pre-fill sector with IG if QE reference exists
+    const sectorSelect = document.getElementById('operator-sector');
+    if (hasQEReference) {
+        sectorSelect.value = 'IG';
+    } else {
+        sectorSelect.value = '';
+    }
+    
     document.getElementById('operator-modal').classList.add('show');
 }
 
