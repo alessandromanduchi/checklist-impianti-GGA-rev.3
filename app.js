@@ -1436,13 +1436,28 @@ async function actuallyGenerateReport() {
             
             pdf.setFont(undefined, 'bold');
             const typeLabel = m.type === 'camminamento' ? 'Camminamento' : 
-                             (m.type === 'corrimano' ? 'Corrimano' : 'Impianto Illuminazione');
+                             (m.type === 'corrimano' ? 'Corrimano' : 
+                             (m.type === 'segnaletica_generale' ? 'Segnaletica generale' : 'Impianto Illuminazione'));
             pdf.text(`Tipo: ${typeLabel}`, 20, y);
             y += 5;
             
             pdf.setFont(undefined, 'normal');
-            pdf.text(`Progressiva: ${m.km}`, 25, y);
-            y += 5;
+            
+            // Show QE di riferimento if available (for illuminazione), otherwise show Progressiva
+            if (m.qeRiferimento) {
+                pdf.text(`QE di riferimento: ${m.qeRiferimento}`, 25, y);
+                y += 5;
+                
+                // Show Ramo di riferimento if available
+                if (m.ramoRiferimento) {
+                    const ramoLabel = m.ramoRiferimento === 'destro' ? 'Destro' : 'Sinistro';
+                    pdf.text(`Ramo di riferimento: ${ramoLabel}`, 25, y);
+                    y += 5;
+                }
+            } else if (m.km) {
+                pdf.text(`Progressiva: ${m.km}`, 25, y);
+                y += 5;
+            }
             
             if (m.illuminazioneFaultType) {
                 const faultLabel = m.illuminazioneFaultType === 'fungo_blu' ? 'Fungo Blu' : 'Corpi Illuminanti';
