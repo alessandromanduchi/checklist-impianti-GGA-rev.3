@@ -120,16 +120,24 @@ function initializeChecklist() {
                 item.checks.idrante_stato = null;
                 item.checks.idrante_sigillo = null;
                 item.checks.idrante_segnaletica = null;
+                item.needsPhoto.idrante_stato = false;
+                item.needsPhoto.idrante_sigillo = false;
+                item.needsPhoto.idrante_segnaletica = false;
             }
             if (type === 'tem') {
                 item.checks.tem_stato = null;
                 // TEM does not require seal verification
                 item.checks.tem_segnaletica = null;
+                item.needsPhoto.tem_stato = false;
+                item.needsPhoto.tem_segnaletica = false;
             }
             if (type === 'quadro_vvf') {
                 item.checks.quadro_stato = null;
                 item.checks.quadro_sigillo = null;
                 item.checks.quadro_segnaletica = null;
+                item.needsPhoto.quadro_stato = false;
+                item.needsPhoto.quadro_sigillo = false;
+                item.needsPhoto.quadro_segnaletica = false;
             }
         });
         
@@ -276,7 +284,16 @@ function createChecklistItem(item, index) {
                             onchange="handleCheck('${item.id}', '${typePrefix}_stato', 'non_funzionante')">
                         <span>Non Funzionante</span>
                     </label>
-                </div>`;
+                </div>
+                <div class="photo-btn" id="photo-btn-${typePrefix}-stato-${item.id}">
+                    <input type="file" accept="image/*" capture="environment" multiple 
+                        onchange="handlePhotos(event, '${item.id}', '${typePrefix}_stato')" 
+                        style="display: none;" id="photo-input-${typePrefix}-stato-${item.id}">
+                    <label for="photo-input-${typePrefix}-stato-${item.id}" style="cursor: pointer; display: block;">
+                        Allega Foto (obbligatoria)
+                    </label>
+                </div>
+                <div id="photos-${typePrefix}-stato-${item.id}" class="photo-preview"></div>`;
         
         // Only show seal check for non-TEM equipment
         if (type !== 'tem') {
@@ -293,7 +310,16 @@ function createChecklistItem(item, index) {
                             onchange="handleCheck('${item.id}', '${typePrefix}_sigillo', 'manomesso')">
                         <span>Manomesso</span>
                     </label>
-                </div>`;
+                </div>
+                <div class="photo-btn" id="photo-btn-${typePrefix}-sigillo-${item.id}">
+                    <input type="file" accept="image/*" capture="environment" multiple 
+                        onchange="handlePhotos(event, '${item.id}', '${typePrefix}_sigillo')" 
+                        style="display: none;" id="photo-input-${typePrefix}-sigillo-${item.id}">
+                    <label for="photo-input-${typePrefix}-sigillo-${item.id}" style="cursor: pointer; display: block;">
+                        Allega Foto (obbligatoria)
+                    </label>
+                </div>
+                <div id="photos-${typePrefix}-sigillo-${item.id}" class="photo-preview"></div>`;
         }
         
         checksHTML += `
@@ -310,6 +336,15 @@ function createChecklistItem(item, index) {
                         <span>Assente</span>
                     </label>
                 </div>
+                <div class="photo-btn" id="photo-btn-${typePrefix}-segnaletica-${item.id}">
+                    <input type="file" accept="image/*" capture="environment" multiple 
+                        onchange="handlePhotos(event, '${item.id}', '${typePrefix}_segnaletica')" 
+                        style="display: none;" id="photo-input-${typePrefix}-segnaletica-${item.id}">
+                    <label for="photo-input-${typePrefix}-segnaletica-${item.id}" style="cursor: pointer; display: block;">
+                        Allega Foto (obbligatoria)
+                    </label>
+                </div>
+                <div id="photos-${typePrefix}-segnaletica-${item.id}" class="photo-preview"></div>
             </div>
         `;
     });
@@ -340,6 +375,14 @@ function handleCheck(itemId, checkType, value) {
     
     item.checks[checkType] = value;
     
+    // Determine if photo is needed (for negative responses)
+    const needsPhoto = value === 'non_funzionante' || value === 'manomesso' || value === 'assente';
+    
+    // Show/hide photo button
+    const photoBtn = document.getElementById(`photo-btn-${checkType}-${itemId}`);
+    if (photoBtn) {
+    }
+    
     // Update radio label styling
     const radios = document.querySelectorAll(`input[name="${checkType}-${itemId}"]`);
     radios.forEach(radio => {
@@ -363,11 +406,64 @@ function handleCheck(itemId, checkType, value) {
     saveToLocalStorage();
 }
 
+function handlePhotos(event, itemId, checkType) {
+    const item = checklistData.find(i => i.id === itemId);
+    if (!item) return;
+    
+    const files = Array.from(event.target.files);
+    
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            if (!item.photosByType[checkType]) {
+                item.photosByType[checkType] = [];
+            }
+            item.photosByType[checkType].push(e.target.result);
+            displayPhotos(itemId, checkType);
+            updateItemCompletion(itemId);
+            saveToLocalStorage();
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function displayPhotos(itemId, checkType) {
+    const item = checklistData.find(i => i.id === itemId);
+    if (!item) return;
+    
+    const container = document.getElementById(`photos-${checkType}-${itemId}`);
+    if (!container) return;
+    
+    const photos = item.photosByType[checkType] || [];
+    container.innerHTML = '';
+    
+    photos.forEach((photo, index) => {
+        const div = document.createElement('div');
+        div.className = 'photo-item';
+        div.innerHTML = `
+            <img src="${photo}" alt="Foto ${index + 1}">
+            <button class="photo-remove" onclick="removePhoto('${itemId}', '${checkType}', ${index})">×</button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function removePhoto(itemId, checkType, photoIndex) {
+    const item = checklistData.find(i => i.id === itemId);
+    if (!item) return;
+    
+    item.photosByType[checkType].splice(photoIndex, 1);
+    displayPhotos(itemId, checkType);
+    updateItemCompletion(itemId);
+    saveToLocalStorage();
+}
+
 function updateItemCompletion(itemId) {
     const item = checklistData.find(i => i.id === itemId);
     if (!item) return;
     
     let allChecked = true;
+    let allPhotosProvided = true;
     let hasProblems = false;
     let hasAnyCheck = false; // Track if at least one check is done
     
@@ -396,6 +492,18 @@ function updateItemCompletion(itemId) {
             }
         }
         
+        // Check if photos are required and provided
+        if (item.needsPhoto[`${prefix}_stato`] && (!item.photosByType[`${prefix}_stato`] || item.photosByType[`${prefix}_stato`].length === 0)) {
+            allPhotosProvided = false;
+        }
+        // Only check sigillo photos for non-TEM equipment
+        if (type !== 'tem' && item.needsPhoto[`${prefix}_sigillo`] && (!item.photosByType[`${prefix}_sigillo`] || item.photosByType[`${prefix}_sigillo`].length === 0)) {
+            allPhotosProvided = false;
+        }
+        if (item.needsPhoto[`${prefix}_segnaletica`] && (!item.photosByType[`${prefix}_segnaletica`] || item.photosByType[`${prefix}_segnaletica`].length === 0)) {
+            allPhotosProvided = false;
+        }
+        
         // Check if this item has ALL checks in worst state (critically failed)
         // For TEM: stato=non_funzionante AND segnaletica=assente
         // For others: stato=non_funzionante AND sigillo=manomesso AND segnaletica=assente
@@ -414,7 +522,7 @@ function updateItemCompletion(itemId) {
     }
     
     // NEW LOGIC: Mark as verified if at least one check is done
-    const isFullyComplete = allChecked; // All checks are done
+    const isFullyComplete = allChecked && allPhotosProvided;
     item.completed = hasAnyCheck; // Verified if ANY check is done
     item.isFullyComplete = isFullyComplete; // Track if ALL checks are done
     item.hasProblems = hasProblems;
@@ -981,15 +1089,23 @@ function navigateToNiche() {
                         item.checks.idrante_stato = null;
                         item.checks.idrante_sigillo = null;
                         item.checks.idrante_segnaletica = null;
+                        item.needsPhoto.idrante_stato = false;
+                        item.needsPhoto.idrante_sigillo = false;
+                        item.needsPhoto.idrante_segnaletica = false;
                     }
                     if (type === 'tem') {
                         item.checks.tem_stato = null;
                         item.checks.tem_segnaletica = null;
+                        item.needsPhoto.tem_stato = false;
+                        item.needsPhoto.tem_segnaletica = false;
                     }
                     if (type === 'quadro_vvf') {
                         item.checks.quadro_stato = null;
                         item.checks.quadro_sigillo = null;
                         item.checks.quadro_segnaletica = null;
+                        item.needsPhoto.quadro_stato = false;
+                        item.needsPhoto.quadro_sigillo = false;
+                        item.needsPhoto.quadro_segnaletica = false;
                     }
                 });
                 
@@ -1360,6 +1476,39 @@ async function actuallyGenerateReport() {
                     pdf.setTextColor(0, 0, 0); // Reset to black
                 }
                 y += 5;
+                
+                // Add photos for this check type if present
+                const photoTypes = type === 'tem' 
+                    ? [`${prefix}_stato`, `${prefix}_segnaletica`]
+                    : [`${prefix}_stato`, `${prefix}_sigillo`, `${prefix}_segnaletica`];
+                for (const photoType of photoTypes) {
+                    const photos = item.photosByType[photoType] || [];
+                    if (photos.length > 0) {
+                        const checkName = photoType.split('_').pop();
+                        pdf.text(`    - Foto ${checkName}: ${photos.length} allegata/e`, 30, y);
+                        y += 5;
+                        
+                        // Add photos to PDF
+                        for (let i = 0; i < photos.length; i++) {
+                            if (y > 200) {
+                                pdf.addPage();
+                                y = 20;
+                            }
+                            
+                            try {
+                                const imgData = photos[i];
+                                const imgWidth = 80;
+                                const imgHeight = 60;
+                                pdf.addImage(imgData, 'JPEG', 30, y, imgWidth, imgHeight);
+                                y += imgHeight + 5;
+                            } catch (error) {
+                                console.error('Error adding image to PDF:', error);
+                                pdf.text(`      [Errore caricamento immagine ${i + 1}]`, 30, y);
+                                y += 5;
+                            }
+                        }
+                    }
+                }
             }
             
             y += 5;
