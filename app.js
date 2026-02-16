@@ -619,12 +619,39 @@ function updateMalfunctionForm() {
     const type = document.getElementById('malfunction-type').value;
     const illuminazioneDetail = document.getElementById('illuminazione-detail');
     const corpiCountGroup = document.getElementById('corpi-count-group');
+    const qeRiferimentoGroup = document.getElementById('qe-riferimento-group');
+    const ramoRiferimentoGroup = document.getElementById('ramo-riferimento-group');
     
     if (type === 'illuminazione') {
         illuminazioneDetail.style.display = 'block';
+        qeRiferimentoGroup.style.display = 'block';
+        
+        // Populate QE di riferimento dropdown if not already populated
+        const qeSelect = document.getElementById('qe-riferimento');
+        if (qeSelect.options.length === 1) { // Only has the default "Seleziona QE..." option
+            for (let i = 1; i <= 152; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `QE ${i}`;
+                qeSelect.appendChild(option);
+            }
+        }
     } else {
         illuminazioneDetail.style.display = 'none';
         corpiCountGroup.style.display = 'none';
+        qeRiferimentoGroup.style.display = 'none';
+        ramoRiferimentoGroup.style.display = 'none';
+    }
+}
+
+function updateRamoDiRiferimento() {
+    const qeValue = document.getElementById('qe-riferimento').value;
+    const ramoRiferimentoGroup = document.getElementById('ramo-riferimento-group');
+    
+    if (qeValue) {
+        ramoRiferimentoGroup.style.display = 'block';
+    } else {
+        ramoRiferimentoGroup.style.display = 'none';
     }
 }
 
@@ -678,6 +705,17 @@ document.getElementById('malfunction-form')?.addEventListener('submit', async fu
         
         if (faultType === 'corpi_illuminanti') {
             malfunction.corpiCount = document.getElementById('corpi-count').value;
+        }
+        
+        // Add QE di riferimento and Ramo di riferimento if provided
+        const qeRiferimento = document.getElementById('qe-riferimento').value;
+        if (qeRiferimento) {
+            malfunction.qeRiferimento = qeRiferimento;
+            
+            const ramoRiferimento = document.getElementById('ramo-riferimento').value;
+            if (ramoRiferimento) {
+                malfunction.ramoRiferimento = ramoRiferimento;
+            }
         }
     }
     

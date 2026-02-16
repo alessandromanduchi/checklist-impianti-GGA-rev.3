@@ -215,6 +215,25 @@
                     <input type="number" class="form-input" id="corpi-count" min="1" placeholder="Es: 3">
                 </div>
                 
+                <div class="form-group" id="qe-riferimento-group" style="display: none;">
+                    <label class="form-label">QE di riferimento</label>
+                    <select class="form-select" id="qe-riferimento" onchange="updateRamoDiRiferimento()">
+                        <option value="">Seleziona QE...</option>
+                    </select>
+                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); font-style: italic;">
+                        Campo riservato a personale IG
+                    </div>
+                </div>
+                
+                <div class="form-group" id="ramo-riferimento-group" style="display: none;">
+                    <label class="form-label">Ramo di riferimento</label>
+                    <select class="form-select" id="ramo-riferimento">
+                        <option value="">Seleziona ramo...</option>
+                        <option value="destro">Destro</option>
+                        <option value="sinistro">Sinistro</option>
+                    </select>
+                </div>
+                
                 <div class="form-group">
                     <label class="form-label">Progressiva Chilometrica *</label>
                     <select class="form-select" id="malfunction-km" required>
