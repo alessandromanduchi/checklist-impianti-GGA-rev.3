@@ -1,6 +1,6 @@
 # Monitoraggio Gallerie - Verifica Apprestamenti Tecnologici GGA
 
-Sistema avanzato di verifica e monitoraggio degli apprestamenti tecnologici nelle nicchie della Galleria di Base del Brennero (GGA).
+Sistema avanzato di verifica e monitoraggio degli apprestamenti tecnologici nelle nicchie della Grende Galleria dell'Appennino (GGA).
 
 [![GitHub Pages](https://img.shields.io/badge/demo-online-success)](https://alessandromanduchi.github.io/checklist-impianti-GGA-rev.3/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -369,7 +369,7 @@ Questo progetto è rilasciato sotto licenza MIT. Vedi [LICENSE](LICENSE) per i d
 
 ## 🙏 Riconoscimenti
 
-Sviluppato per la sicurezza e manutenzione della **Galleria di Base del Brennero (GGA)**.
+Sviluppato per la sicurezza e manutenzione della **Grande Galleria dell'Appennino (GGA)**.
 
 Ringraziamenti speciali a:
 - Team di manutenzione RFI
