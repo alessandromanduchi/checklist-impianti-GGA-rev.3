@@ -11,10 +11,9 @@ let currentFilter = 'all'; // Equipment type filter: 'all', 'tem', 'idrante', 'q
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    // Clear all data on page reload - fresh start every time
+    // Clear checklist data on page reload - fresh start every time
+    // But keep malfunctions and genericPhotos until PDF is generated
     localStorage.removeItem('checklistData');
-    localStorage.removeItem('malfunctions');
-    localStorage.removeItem('genericPhotos');
     localStorage.removeItem('verificationConfig');
     
     // Always start with config modal
