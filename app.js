@@ -496,13 +496,22 @@ function closeMalfunctionModal() {
 
 function updateMalfunctionForm() {
     const type = document.getElementById('malfunction-type').value;
-    const illuminazioneDetail = document.getElementById('illuminazione-detail');
-    const corpiCountGroup = document.getElementById('corpi-count-group');
+    const camminamentoStatusGroup = document.getElementById('camminamento-status-group');
+    const illuminazioneCountGroup = document.getElementById('illuminazione-count-group');
     const qeRiferimentoGroup = document.getElementById('qe-riferimento-group');
     const ramoRiferimentoGroup = document.getElementById('ramo-riferimento-group');
     
-    if (type === 'illuminazione') {
-        illuminazioneDetail.style.display = 'block';
+    // Hide all type-specific fields initially
+    if (camminamentoStatusGroup) camminamentoStatusGroup.style.display = 'none';
+    if (illuminazioneCountGroup) illuminazioneCountGroup.style.display = 'none';
+    if (qeRiferimentoGroup) qeRiferimentoGroup.style.display = 'none';
+    if (ramoRiferimentoGroup) ramoRiferimentoGroup.style.display = 'none';
+    
+    // Show type-specific fields based on selected type
+    if (type === 'camminamento_corrimano') {
+        camminamentoStatusGroup.style.display = 'block';
+    } else if (type === 'illuminazione') {
+        illuminazioneCountGroup.style.display = 'block';
         qeRiferimentoGroup.style.display = 'block';
         
         // Populate QE di riferimento dropdown if not already populated
@@ -671,12 +680,8 @@ function updateMalfunctionForm() {
                 qeSelect.appendChild(option);
             });
         }
-    } else {
-        illuminazioneDetail.style.display = 'none';
-        corpiCountGroup.style.display = 'none';
-        qeRiferimentoGroup.style.display = 'none';
-        ramoRiferimentoGroup.style.display = 'none';
     }
+    // For segnaletica and altro, no additional fields needed
 }
 
 function updateRamoDiRiferimento() {
@@ -742,12 +747,16 @@ document.getElementById('malfunction-form')?.addEventListener('submit', async fu
         timestamp: new Date().toISOString()
     };
     
-    if (type === 'illuminazione') {
-        const faultType = document.getElementById('illuminazione-fault-type').value;
-        malfunction.illuminazioneFaultType = faultType;
-        
-        if (faultType === 'corpi_illuminanti') {
-            malfunction.corpiCount = document.getElementById('corpi-count').value;
+    // Type-specific fields
+    if (type === 'camminamento_corrimano') {
+        const status = document.getElementById('camminamento-status').value;
+        if (status) {
+            malfunction.camminamentoStatus = status;
+        }
+    } else if (type === 'illuminazione') {
+        const count = document.getElementById('illuminazione-count').value;
+        if (count) {
+            malfunction.lightCount = count;
         }
         
         // Add QE di riferimento and Ramo di riferimento if provided
@@ -1402,13 +1411,26 @@ async function actuallyGenerateReport() {
             }
             
             pdf.setFont(undefined, 'bold');
-            const typeLabel = m.type === 'camminamento' ? 'Camminamento' : 
-                             (m.type === 'corrimano' ? 'Corrimano' : 
-                             (m.type === 'segnaletica_generale' ? 'Segnaletica generale' : 'Impianto Illuminazione'));
+            const typeLabel = m.type === 'camminamento_corrimano' ? 'Camminamento e corrimano' : 
+                             (m.type === 'segnaletica' ? 'Segnaletica' : 
+                             (m.type === 'altro' ? 'Altro' : 'Impianto di illuminazione'));
             pdf.text(`Tipo: ${typeLabel}`, 20, y);
             y += 5;
             
             pdf.setFont(undefined, 'normal');
+            
+            // Show camminamento status if available
+            if (m.camminamentoStatus) {
+                const statusLabel = m.camminamentoStatus === 'agibile' ? 'Agibile' : 'Non Agibile';
+                pdf.text(`Stato: ${statusLabel}`, 25, y);
+                y += 5;
+            }
+            
+            // Show light count if available
+            if (m.lightCount) {
+                pdf.text(`Corpi illuminanti non funzionanti: ${m.lightCount}`, 25, y);
+                y += 5;
+            }
             
             // Show QE di riferimento if available (for illuminazione), otherwise show Progressiva
             if (m.qeRiferimento) {
@@ -1426,19 +1448,8 @@ async function actuallyGenerateReport() {
                 y += 5;
             }
             
-            if (m.illuminazioneFaultType) {
-                const faultLabel = m.illuminazioneFaultType === 'fungo_blu' ? 'Fungo Blu' : 'Corpi Illuminanti';
-                pdf.text(`Tipo guasto: ${faultLabel}`, 25, y);
-                y += 5;
-                
-                if (m.corpiCount) {
-                    pdf.text(`Corpi non funzionanti: ${m.corpiCount}`, 25, y);
-                    y += 5;
-                }
-            }
-            
             if (m.notes) {
-                const lines = pdf.splitTextToSize(`Note: ${m.notes}`, 170);
+                const lines = pdf.splitTextToSize(`Descrizione: ${m.notes}`, 170);
                 lines.forEach(line => {
                     if (y > 280) {
                         pdf.addPage();

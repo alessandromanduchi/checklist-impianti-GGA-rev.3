@@ -88,6 +88,9 @@
     <div class="fab-container fab-top-right">
         <button class="fab fab-filter" onclick="openFilterModal()">🔍</button>
     </div>
+    <div class="fab-container">
+        <button class="fab fab-warning" onclick="openMalfunctionModal()" aria-label="Segnala Malfunzionamento">⚠️</button>
+    </div>
     
     <!-- Filter Modal -->
     <div class="modal" id="filter-modal">
@@ -191,25 +194,40 @@
                     <label class="form-label">Tipo di Malfunzionamento *</label>
                     <select class="form-select" id="malfunction-type" required onchange="updateMalfunctionForm()">
                         <option value="">Seleziona...</option>
-                        <option value="camminamento">Camminamento</option>
-                        <option value="corrimano">Corrimano</option>
-                        <option value="illuminazione">Impianto di Illuminazione</option>
-                        <option value="segnaletica_generale">Segnaletica generale</option>
+                        <option value="camminamento_corrimano">Camminamento e corrimano</option>
+                        <option value="illuminazione">Impianto di illuminazione</option>
+                        <option value="segnaletica">Segnaletica</option>
+                        <option value="altro">Altro</option>
                     </select>
                 </div>
                 
-                <div class="form-group" id="illuminazione-detail" style="display: none;">
-                    <label class="form-label">Tipo di Guasto Illuminazione *</label>
-                    <select class="form-select" id="illuminazione-fault-type">
+                <!-- Camminamento e corrimano fields -->
+                <div class="form-group" id="camminamento-status-group" style="display: none;">
+                    <label class="form-label">Stato Camminamento *</label>
+                    <select class="form-select" id="camminamento-status">
                         <option value="">Seleziona...</option>
-                        <option value="fungo_blu">Fungo Blu</option>
-                        <option value="corpi_illuminanti">Corpi Illuminanti</option>
+                        <option value="agibile">Agibile</option>
+                        <option value="non_agibile">Non Agibile</option>
                     </select>
                 </div>
                 
-                <div class="form-group" id="corpi-count-group" style="display: none;">
+                <!-- Illuminazione fields -->
+                <div class="form-group" id="illuminazione-count-group" style="display: none;">
                     <label class="form-label">Numero Corpi Illuminanti Non Funzionanti *</label>
-                    <input type="number" class="form-input" id="corpi-count" min="1" placeholder="Es: 3">
+                    <select class="form-select" id="illuminazione-count">
+                        <option value="">Seleziona...</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value=">10">&gt;10</option>
+                    </select>
                 </div>
                 
                 <div class="form-group" id="qe-riferimento-group" style="display: none;">
@@ -245,8 +263,8 @@
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">Note Aggiuntive</label>
-                    <textarea class="form-input" id="malfunction-notes" rows="3" placeholder="Inserisci eventuali note..."></textarea>
+                    <label class="form-label">Descrizione *</label>
+                    <textarea class="form-input" id="malfunction-notes" rows="3" placeholder="Descrizione del malfunzionamento..." required></textarea>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-block">Salva Segnalazione</button>
