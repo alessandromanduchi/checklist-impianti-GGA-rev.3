@@ -496,13 +496,17 @@ function closeMalfunctionModal() {
 function updateMalfunctionForm() {
     const type = document.getElementById('malfunction-type').value;
     const camminamentoStatusGroup = document.getElementById('camminamento-status-group');
-    const illuminazioneCountGroup = document.getElementById('illuminazione-count-group');
+    const illuminazioneFaultTypeGroup = document.getElementById('illuminazione-fault-type-group');
+    const illuminazioneFunghiGroup = document.getElementById('illuminazione-funghi-group');
+    const illuminazioneCorpiGroup = document.getElementById('illuminazione-corpi-group');
     const qeRiferimentoGroup = document.getElementById('qe-riferimento-group');
     const ramoRiferimentoGroup = document.getElementById('ramo-riferimento-group');
     
     // Hide all type-specific fields initially
     if (camminamentoStatusGroup) camminamentoStatusGroup.style.display = 'none';
-    if (illuminazioneCountGroup) illuminazioneCountGroup.style.display = 'none';
+    if (illuminazioneFaultTypeGroup) illuminazioneFaultTypeGroup.style.display = 'none';
+    if (illuminazioneFunghiGroup) illuminazioneFunghiGroup.style.display = 'none';
+    if (illuminazioneCorpiGroup) illuminazioneCorpiGroup.style.display = 'none';
     if (qeRiferimentoGroup) qeRiferimentoGroup.style.display = 'none';
     if (ramoRiferimentoGroup) ramoRiferimentoGroup.style.display = 'none';
     
@@ -510,7 +514,7 @@ function updateMalfunctionForm() {
     if (type === 'camminamento_corrimano') {
         camminamentoStatusGroup.style.display = 'block';
     } else if (type === 'illuminazione') {
-        illuminazioneCountGroup.style.display = 'block';
+        illuminazioneFaultTypeGroup.style.display = 'block';
         qeRiferimentoGroup.style.display = 'block';
         
         // Populate QE di riferimento dropdown if not already populated
@@ -702,6 +706,34 @@ function updateRamoDiRiferimento() {
     }
 }
 
+function updateIlluminazioneFaultType() {
+    const faultType = document.getElementById('illuminazione-fault-type').value;
+    const funghiGroup = document.getElementById('illuminazione-funghi-group');
+    const corpiGroup = document.getElementById('illuminazione-corpi-group');
+    const funghiInput = document.getElementById('illuminazione-funghi-count');
+    const corpiSelect = document.getElementById('illuminazione-corpi-count');
+    
+    // Hide both count fields initially
+    if (funghiGroup) funghiGroup.style.display = 'none';
+    if (corpiGroup) corpiGroup.style.display = 'none';
+    
+    // Clear values when switching types
+    if (funghiInput) funghiInput.value = '';
+    if (corpiSelect) corpiSelect.value = '';
+    
+    // Show appropriate count field based on fault type
+    if (faultType === 'fungo_blu') {
+        funghiGroup.style.display = 'block';
+        funghiInput.setAttribute('required', 'required');
+        corpiSelect.removeAttribute('required');
+    } else if (faultType === 'corpi_illuminanti') {
+        corpiGroup.style.display = 'block';
+        corpiSelect.setAttribute('required', 'required');
+        funghiInput.removeAttribute('required');
+    }
+}
+
+
 document.getElementById('illuminazione-fault-type')?.addEventListener('change', function() {
     const faultType = this.value;
     const corpiCountGroup = document.getElementById('corpi-count-group');
@@ -753,9 +785,23 @@ document.getElementById('malfunction-form')?.addEventListener('submit', async fu
             malfunction.camminamentoStatus = status;
         }
     } else if (type === 'illuminazione') {
-        const count = document.getElementById('illuminazione-count').value;
-        if (count) {
-            malfunction.lightCount = count;
+        // Get fault type (fungo_blu or corpi_illuminanti)
+        const faultType = document.getElementById('illuminazione-fault-type').value;
+        if (faultType) {
+            malfunction.illuminazioneFaultType = faultType;
+            
+            // Get count based on fault type
+            if (faultType === 'fungo_blu') {
+                const funghiCount = document.getElementById('illuminazione-funghi-count').value;
+                if (funghiCount) {
+                    malfunction.funghiCount = funghiCount;
+                }
+            } else if (faultType === 'corpi_illuminanti') {
+                const corpiCount = document.getElementById('illuminazione-corpi-count').value;
+                if (corpiCount) {
+                    malfunction.lightCount = corpiCount;
+                }
+            }
         }
         
         // Add QE di riferimento and Ramo di riferimento if provided
@@ -1434,10 +1480,20 @@ async function actuallyGenerateReport() {
                 y += 5;
             }
             
-            // Show light count if available
-            if (m.lightCount) {
-                pdf.text(`Corpi illuminanti non funzionanti: ${m.lightCount}`, 25, y);
+            // Show illuminazione fault type and counts if available
+            if (m.illuminazioneFaultType) {
+                const faultTypeLabel = m.illuminazioneFaultType === 'fungo_blu' ? 'Fungo Blu' : 'Corpi Illuminanti';
+                pdf.text(`Tipo guasto: ${faultTypeLabel}`, 25, y);
                 y += 5;
+                
+                // Show appropriate count
+                if (m.funghiCount) {
+                    pdf.text(`Funghi blu non funzionanti: ${m.funghiCount}`, 25, y);
+                    y += 5;
+                } else if (m.lightCount) {
+                    pdf.text(`Corpi illuminanti non funzionanti: ${m.lightCount}`, 25, y);
+                    y += 5;
+                }
             }
             
             // Show QE di riferimento if available (for illuminazione), otherwise show Progressiva

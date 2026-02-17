@@ -212,9 +212,24 @@
                 </div>
                 
                 <!-- Illuminazione fields -->
-                <div class="form-group" id="illuminazione-count-group" style="display: none;">
+                <div class="form-group" id="illuminazione-fault-type-group" style="display: none;">
+                    <label class="form-label">Tipo di Guasto Illuminazione *</label>
+                    <select class="form-select" id="illuminazione-fault-type" required onchange="updateIlluminazioneFaultType()">
+                        <option value="">Seleziona...</option>
+                        <option value="fungo_blu">Fungo Blu</option>
+                        <option value="corpi_illuminanti">Corpi Illuminanti</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="illuminazione-funghi-group" style="display: none;">
+                    <label class="form-label">Numero Funghi Blu Non Funzionanti *</label>
+                    <input type="number" class="form-input" id="illuminazione-funghi-count" min="1" 
+                           placeholder="Inserisci numero funghi blu non funzionanti">
+                </div>
+
+                <div class="form-group" id="illuminazione-corpi-group" style="display: none;">
                     <label class="form-label">Numero Corpi Illuminanti Non Funzionanti *</label>
-                    <select class="form-select" id="illuminazione-count">
+                    <select class="form-select" id="illuminazione-corpi-count">
                         <option value="">Seleziona...</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
@@ -264,7 +279,7 @@
                 
                 <div class="form-group">
                     <label class="form-label">Descrizione *</label>
-                    <textarea class="form-input" id="malfunction-notes" rows="3" placeholder="Descrizione del malfunzionamento..." required></textarea>
+                    <textarea class="form-input" id="malfunction-notes" rows="3" placeholder="Descrizione del malfunzionamento (opzionale)..."></textarea>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-block">Salva Segnalazione</button>
