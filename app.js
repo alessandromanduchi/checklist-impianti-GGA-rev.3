@@ -779,6 +779,8 @@ document.getElementById('malfunction-form')?.addEventListener('submit', async fu
     reader.onload = (e) => {
         malfunction.photo = e.target.result;
         malfunctions.push(malfunction);
+        console.log('Malfunction saved:', malfunction);
+        console.log('Total malfunctions:', malfunctions.length);
         saveMalfunctionsToLocalStorage();
         showToast('Segnalazione salvata con successo', 'success');
     };
@@ -1085,6 +1087,10 @@ async function actuallyGenerateReport() {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF();
     
+    // Debug: Log malfunctions at PDF generation time
+    console.log('Generating PDF - Malfunctions:', malfunctions);
+    console.log('Malfunctions count:', malfunctions.length);
+    
     let y = 20;
     
     // Header with box
@@ -1384,7 +1390,9 @@ async function actuallyGenerateReport() {
     }
     
     // Malfunctions
+    console.log('PDF Generation - Checking malfunctions:', malfunctions.length);
     if (malfunctions.length > 0) {
+        console.log('Adding malfunction section to PDF');
         if (y > 250) {
             pdf.addPage();
             y = 20;
@@ -1405,6 +1413,7 @@ async function actuallyGenerateReport() {
         pdf.setFont(undefined, 'normal');
         
         for (const m of malfunctions) {
+            console.log('Adding malfunction to PDF:', m);
             if (y > 270) {
                 pdf.addPage();
                 y = 20;
