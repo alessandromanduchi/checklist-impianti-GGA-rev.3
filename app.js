@@ -515,168 +515,7 @@ function updateMalfunctionForm() {
         // Populate QE di riferimento dropdown if not already populated
         const qeSelect = document.getElementById('qe-riferimento');
         if (qeSelect.options.length === 1) { // Only has the default "Seleziona QE..." option
-            // Specific QE list with km and binario information
-            const qeList = [
-                { num: 1, km: "37+234", binario: "D" },
-                { num: 2, km: "37+200", binario: "P" },
-                { num: 3, km: "37+435", binario: "D" },
-                { num: 4, km: "37+413", binario: "P" },
-                { num: 5, km: "37+688", binario: "D" },
-                { num: 6, km: "37+663", binario: "P" },
-                { num: 7, km: "37+988", binario: "D" },
-                { num: 8, km: "37+913", binario: "P" },
-                { num: 9, km: "38+238", binario: "D" },
-                { num: 10, km: "38+163", binario: "P" },
-                { num: 11, km: "38+488", binario: "D" },
-                { num: 12, km: "38+413", binario: "P" },
-                { num: 13, km: "38+738", binario: "D" },
-                { num: 14, km: "38+663", binario: "P" },
-                { num: 15, km: "38+989", binario: "D" },
-                { num: 16, km: "38+863", binario: "P" },
-                { num: 17, km: "39+238", binario: "D" },
-                { num: 18, km: "39+113", binario: "P" },
-                { num: 19, km: "39+488", binario: "D" },
-                { num: 20, km: "39+313", binario: "P" },
-                { num: 21, km: "39+788", binario: "D" },
-                { num: 22, km: "39+563", binario: "P" },
-                { num: 23, km: "40+038", binario: "D" },
-                { num: 24, km: "39+763", binario: "P" },
-                { num: 25, km: "40+288", binario: "D" },
-                { num: 26, km: "40+013", binario: "P" },
-                { num: 27, km: "40+538", binario: "D" },
-                { num: 28, km: "40+263", binario: "P" },
-                { num: 29, km: "40+732", binario: "D" },
-                { num: 30, km: "40+513", binario: "P" },
-                { num: 31, km: "40+988", binario: "D" },
-                { num: 32, km: "40+763", binario: "P" },
-                { num: 33, km: "41+232", binario: "D" },
-                { num: 34, km: "41+013", binario: "P" },
-                { num: 35, km: "41+535", binario: "D" },
-                { num: 36, km: "41+259", binario: "P" },
-                { num: 37, km: "41+836", binario: "D" },
-                { num: 38, km: "41+513", binario: "P" },
-                { num: 39, km: "42+138", binario: "D" },
-                { num: 40, km: "41+763", binario: "P" },
-                { num: 41, km: "42+388", binario: "D" },
-                { num: 42, km: "42+063", binario: "P" },
-                { num: 43, km: "42+686", binario: "D" },
-                { num: 44, km: "42+313", binario: "P" },
-                { num: 45, km: "42+888", binario: "D" },
-                { num: 46, km: "42+563", binario: "P" },
-                { num: 47, km: "43+138", binario: "D" },
-                { num: 48, km: "42+813", binario: "P" },
-                { num: 49, km: "43+338", binario: "D" },
-                { num: 50, km: "43+088", binario: "P" },
-                { num: 51, km: "43+688", binario: "D" },
-                { num: 52, km: "43+313", binario: "P" },
-                { num: 53, km: "43+938", binario: "D" },
-                { num: 54, km: "43+563", binario: "P" },
-                { num: 55, km: "44+188", binario: "D" },
-                { num: 56, km: "43+813", binario: "P" },
-                { num: 57, km: "44+436", binario: "D" },
-                { num: 58, km: "44+019", binario: "P" },
-                { num: 59, km: "44+683", binario: "D" },
-                { num: 60, km: "44+219", binario: "P" },
-                { num: 61, km: "44+933", binario: "D" },
-                { num: 62, km: "44+458", binario: "P" },
-                { num: 63, km: "45+233", binario: "D" },
-                { num: 64, km: "44+708", binario: "P" },
-                { num: 65, km: "45+433", binario: "D" },
-                { num: 66, km: "44+958", binario: "P" },
-                { num: 67, km: "45+683", binario: "D" },
-                { num: 68, km: "45+258", binario: "P" },
-                { num: 69, km: "45+935", binario: "D" },
-                { num: 70, km: "45+458", binario: "P" },
-                { num: 71, km: "46+184", binario: "D" },
-                { num: 72, km: "45+708", binario: "P" },
-                { num: 73, km: "46+481", binario: "D" },
-                { num: 74, km: "45+958", binario: "P" },
-                { num: 75, km: "46+780", binario: "D" },
-                { num: 76, km: "46+236", binario: "P" },
-                { num: 77, km: "46+848", binario: "D" },
-                { num: 78, km: "46+497", binario: "P" },
-                { num: 79, km: "47+100", binario: "D" },
-                { num: 80, km: "46+800", binario: "P" },
-                { num: 81, km: "47+298", binario: "D" },
-                { num: 82, km: "46+870", binario: "P" },
-                { num: 83, km: "47+524", binario: "D" },
-                { num: 84, km: "47+223", binario: "P" },
-                { num: 85, km: "47+774", binario: "D" },
-                { num: 86, km: "47+499", binario: "P" },
-                { num: 87, km: "47+974", binario: "D" },
-                { num: 88, km: "47+749", binario: "P" },
-                { num: 89, km: "48+274", binario: "D" },
-                { num: 90, km: "47+999", binario: "P" },
-                { num: 91, km: "48+524", binario: "D" },
-                { num: 92, km: "48+249", binario: "P" },
-                { num: 93, km: "48+774", binario: "D" },
-                { num: 94, km: "48+449", binario: "P" },
-                { num: 95, km: "49+024", binario: "D" },
-                { num: 96, km: "48+649", binario: "P" },
-                { num: 97, km: "49+324", binario: "D" },
-                { num: 98, km: "48+849", binario: "P" },
-                { num: 99, km: "49+574", binario: "D" },
-                { num: 100, km: "49+099", binario: "P" },
-                { num: 101, km: "49+774", binario: "D" },
-                { num: 102, km: "49+349", binario: "P" },
-                { num: 103, km: "50+023", binario: "D" },
-                { num: 104, km: "49+599", binario: "P" },
-                { num: 105, km: "50+273", binario: "D" },
-                { num: 106, km: "49+849", binario: "P" },
-                { num: 107, km: "50+522", binario: "D" },
-                { num: 108, km: "50+098", binario: "P" },
-                { num: 109, km: "50+771", binario: "D" },
-                { num: 110, km: "50+397", binario: "P" },
-                { num: 111, km: "50+970", binario: "D" },
-                { num: 112, km: "50+647", binario: "P" },
-                { num: 113, km: "51+219", binario: "D" },
-                { num: 114, km: "50+875", binario: "P" },
-                { num: 115, km: "51+419", binario: "D" },
-                { num: 116, km: "51+144", binario: "P" },
-                { num: 117, km: "51+669", binario: "D" },
-                { num: 118, km: "51+394", binario: "P" },
-                { num: 119, km: "51+919", binario: "D" },
-                { num: 120, km: "51+644", binario: "P" },
-                { num: 121, km: "52+171", binario: "D" },
-                { num: 122, km: "51+894", binario: "P" },
-                { num: 123, km: "52+421", binario: "D" },
-                { num: 124, km: "52+143", binario: "P" },
-                { num: 125, km: "52+634", binario: "D" },
-                { num: 126, km: "52+396", binario: "P" },
-                { num: 127, km: "52+871", binario: "D" },
-                { num: 128, km: "52+621", binario: "P" },
-                { num: 129, km: "53+123", binario: "D" },
-                { num: 130, km: "52+846", binario: "P" },
-                { num: 131, km: "53+323", binario: "D" },
-                { num: 132, km: "53+097", binario: "P" },
-                { num: 133, km: "53+573", binario: "D" },
-                { num: 134, km: "53+347", binario: "P" },
-                { num: 135, km: "53+823", binario: "D" },
-                { num: 136, km: "53+597", binario: "P" },
-                { num: 137, km: "54+074", binario: "D" },
-                { num: 138, km: "53+847", binario: "P" },
-                { num: 139, km: "54+274", binario: "D" },
-                { num: 140, km: "54+099", binario: "P" },
-                { num: 141, km: "54+474", binario: "D" },
-                { num: 142, km: "54+349", binario: "P" },
-                { num: 143, km: "54+724", binario: "D" },
-                { num: 144, km: "54+599", binario: "P" },
-                { num: 145, km: "54+974", binario: "D" },
-                { num: 146, km: "54+899", binario: "P" },
-                { num: 147, km: "55+225", binario: "D" },
-                { num: 148, km: "55+150", binario: "P" },
-                { num: 149, km: "55+425", binario: "D" },
-                { num: 150, km: "55+400", binario: "P" },
-                { num: 151, km: "55+742", binario: "D" },
-                { num: 152, km: "55+742", binario: "P" }
-            ];
-            
-            qeList.forEach(qe => {
-                const option = document.createElement('option');
-                option.value = `QE ${qe.num} (${qe.km} - Binario ${qe.binario})`;
-                option.textContent = `QE n.${qe.num} (${qe.km} - Binario ${qe.binario})`;
-                qeSelect.appendChild(option);
-            });
+            populateQESelect('qe-riferimento');
         }
     }
     // For segnaletica and altro, no additional fields needed
@@ -731,8 +570,8 @@ function updateIlluminazioneFaultType() {
 
 // Note: illuminazione-fault-type change is handled by updateIlluminazioneFaultType() via onchange attribute
 
-function populateAllNichesSelect() {
-    const select = document.getElementById('malfunction-km');
+function populateAllNichesSelect(selectId = 'malfunction-km') {
+    const select = document.getElementById(selectId);
     select.innerHTML = '<option value="">Seleziona nicchia...</option>';
     
     ALL_NICHES_DATA.forEach(niche => {
@@ -740,6 +579,171 @@ function populateAllNichesSelect() {
         option.value = `${niche.km}-${niche.binario}`;
         option.textContent = `${niche.km} - Binario ${niche.binario}`;
         select.appendChild(option);
+    });
+}
+
+function populateQESelect(selectId) {
+    const qeSelect = document.getElementById(selectId);
+    if (!qeSelect || qeSelect.options.length > 1) return; // Already populated
+    const qeList = [
+        { num: 1, km: "37+234", binario: "D" },
+        { num: 2, km: "37+200", binario: "P" },
+        { num: 3, km: "37+435", binario: "D" },
+        { num: 4, km: "37+413", binario: "P" },
+        { num: 5, km: "37+688", binario: "D" },
+        { num: 6, km: "37+663", binario: "P" },
+        { num: 7, km: "37+988", binario: "D" },
+        { num: 8, km: "37+913", binario: "P" },
+        { num: 9, km: "38+238", binario: "D" },
+        { num: 10, km: "38+163", binario: "P" },
+        { num: 11, km: "38+488", binario: "D" },
+        { num: 12, km: "38+413", binario: "P" },
+        { num: 13, km: "38+738", binario: "D" },
+        { num: 14, km: "38+663", binario: "P" },
+        { num: 15, km: "38+989", binario: "D" },
+        { num: 16, km: "38+863", binario: "P" },
+        { num: 17, km: "39+238", binario: "D" },
+        { num: 18, km: "39+113", binario: "P" },
+        { num: 19, km: "39+488", binario: "D" },
+        { num: 20, km: "39+313", binario: "P" },
+        { num: 21, km: "39+788", binario: "D" },
+        { num: 22, km: "39+563", binario: "P" },
+        { num: 23, km: "40+038", binario: "D" },
+        { num: 24, km: "39+763", binario: "P" },
+        { num: 25, km: "40+288", binario: "D" },
+        { num: 26, km: "40+013", binario: "P" },
+        { num: 27, km: "40+538", binario: "D" },
+        { num: 28, km: "40+263", binario: "P" },
+        { num: 29, km: "40+732", binario: "D" },
+        { num: 30, km: "40+513", binario: "P" },
+        { num: 31, km: "40+988", binario: "D" },
+        { num: 32, km: "40+763", binario: "P" },
+        { num: 33, km: "41+232", binario: "D" },
+        { num: 34, km: "41+013", binario: "P" },
+        { num: 35, km: "41+535", binario: "D" },
+        { num: 36, km: "41+259", binario: "P" },
+        { num: 37, km: "41+836", binario: "D" },
+        { num: 38, km: "41+513", binario: "P" },
+        { num: 39, km: "42+138", binario: "D" },
+        { num: 40, km: "41+763", binario: "P" },
+        { num: 41, km: "42+388", binario: "D" },
+        { num: 42, km: "42+063", binario: "P" },
+        { num: 43, km: "42+686", binario: "D" },
+        { num: 44, km: "42+313", binario: "P" },
+        { num: 45, km: "42+888", binario: "D" },
+        { num: 46, km: "42+563", binario: "P" },
+        { num: 47, km: "43+138", binario: "D" },
+        { num: 48, km: "42+813", binario: "P" },
+        { num: 49, km: "43+338", binario: "D" },
+        { num: 50, km: "43+088", binario: "P" },
+        { num: 51, km: "43+688", binario: "D" },
+        { num: 52, km: "43+313", binario: "P" },
+        { num: 53, km: "43+938", binario: "D" },
+        { num: 54, km: "43+563", binario: "P" },
+        { num: 55, km: "44+188", binario: "D" },
+        { num: 56, km: "43+813", binario: "P" },
+        { num: 57, km: "44+436", binario: "D" },
+        { num: 58, km: "44+019", binario: "P" },
+        { num: 59, km: "44+683", binario: "D" },
+        { num: 60, km: "44+219", binario: "P" },
+        { num: 61, km: "44+933", binario: "D" },
+        { num: 62, km: "44+458", binario: "P" },
+        { num: 63, km: "45+233", binario: "D" },
+        { num: 64, km: "44+708", binario: "P" },
+        { num: 65, km: "45+433", binario: "D" },
+        { num: 66, km: "44+958", binario: "P" },
+        { num: 67, km: "45+683", binario: "D" },
+        { num: 68, km: "45+258", binario: "P" },
+        { num: 69, km: "45+935", binario: "D" },
+        { num: 70, km: "45+458", binario: "P" },
+        { num: 71, km: "46+184", binario: "D" },
+        { num: 72, km: "45+708", binario: "P" },
+        { num: 73, km: "46+481", binario: "D" },
+        { num: 74, km: "45+958", binario: "P" },
+        { num: 75, km: "46+780", binario: "D" },
+        { num: 76, km: "46+236", binario: "P" },
+        { num: 77, km: "46+848", binario: "D" },
+        { num: 78, km: "46+497", binario: "P" },
+        { num: 79, km: "47+100", binario: "D" },
+        { num: 80, km: "46+800", binario: "P" },
+        { num: 81, km: "47+298", binario: "D" },
+        { num: 82, km: "46+870", binario: "P" },
+        { num: 83, km: "47+524", binario: "D" },
+        { num: 84, km: "47+223", binario: "P" },
+        { num: 85, km: "47+774", binario: "D" },
+        { num: 86, km: "47+499", binario: "P" },
+        { num: 87, km: "47+974", binario: "D" },
+        { num: 88, km: "47+749", binario: "P" },
+        { num: 89, km: "48+274", binario: "D" },
+        { num: 90, km: "47+999", binario: "P" },
+        { num: 91, km: "48+524", binario: "D" },
+        { num: 92, km: "48+249", binario: "P" },
+        { num: 93, km: "48+774", binario: "D" },
+        { num: 94, km: "48+449", binario: "P" },
+        { num: 95, km: "49+024", binario: "D" },
+        { num: 96, km: "48+649", binario: "P" },
+        { num: 97, km: "49+324", binario: "D" },
+        { num: 98, km: "48+849", binario: "P" },
+        { num: 99, km: "49+574", binario: "D" },
+        { num: 100, km: "49+099", binario: "P" },
+        { num: 101, km: "49+774", binario: "D" },
+        { num: 102, km: "49+349", binario: "P" },
+        { num: 103, km: "50+023", binario: "D" },
+        { num: 104, km: "49+599", binario: "P" },
+        { num: 105, km: "50+273", binario: "D" },
+        { num: 106, km: "49+849", binario: "P" },
+        { num: 107, km: "50+522", binario: "D" },
+        { num: 108, km: "50+098", binario: "P" },
+        { num: 109, km: "50+771", binario: "D" },
+        { num: 110, km: "50+397", binario: "P" },
+        { num: 111, km: "50+970", binario: "D" },
+        { num: 112, km: "50+647", binario: "P" },
+        { num: 113, km: "51+219", binario: "D" },
+        { num: 114, km: "50+875", binario: "P" },
+        { num: 115, km: "51+419", binario: "D" },
+        { num: 116, km: "51+144", binario: "P" },
+        { num: 117, km: "51+669", binario: "D" },
+        { num: 118, km: "51+394", binario: "P" },
+        { num: 119, km: "51+919", binario: "D" },
+        { num: 120, km: "51+644", binario: "P" },
+        { num: 121, km: "52+171", binario: "D" },
+        { num: 122, km: "51+894", binario: "P" },
+        { num: 123, km: "52+421", binario: "D" },
+        { num: 124, km: "52+143", binario: "P" },
+        { num: 125, km: "52+634", binario: "D" },
+        { num: 126, km: "52+396", binario: "P" },
+        { num: 127, km: "52+871", binario: "D" },
+        { num: 128, km: "52+621", binario: "P" },
+        { num: 129, km: "53+123", binario: "D" },
+        { num: 130, km: "52+846", binario: "P" },
+        { num: 131, km: "53+323", binario: "D" },
+        { num: 132, km: "53+097", binario: "P" },
+        { num: 133, km: "53+573", binario: "D" },
+        { num: 134, km: "53+347", binario: "P" },
+        { num: 135, km: "53+823", binario: "D" },
+        { num: 136, km: "53+597", binario: "P" },
+        { num: 137, km: "54+074", binario: "D" },
+        { num: 138, km: "53+847", binario: "P" },
+        { num: 139, km: "54+274", binario: "D" },
+        { num: 140, km: "54+099", binario: "P" },
+        { num: 141, km: "54+474", binario: "D" },
+        { num: 142, km: "54+349", binario: "P" },
+        { num: 143, km: "54+724", binario: "D" },
+        { num: 144, km: "54+599", binario: "P" },
+        { num: 145, km: "54+974", binario: "D" },
+        { num: 146, km: "54+899", binario: "P" },
+        { num: 147, km: "55+225", binario: "D" },
+        { num: 148, km: "55+150", binario: "P" },
+        { num: 149, km: "55+425", binario: "D" },
+        { num: 150, km: "55+400", binario: "P" },
+        { num: 151, km: "55+742", binario: "D" },
+        { num: 152, km: "55+742", binario: "P" }
+    ];
+    qeList.forEach(qe => {
+        const option = document.createElement('option');
+        option.value = `QE ${qe.num} (${qe.km} - Binario ${qe.binario})`;
+        option.textContent = `QE n.${qe.num} (${qe.km} - Binario ${qe.binario})`;
+        qeSelect.appendChild(option);
     });
 }
 
@@ -841,58 +845,161 @@ function saveGenericPhotosToLocalStorage() {
     localStorage.setItem('genericPhotos', JSON.stringify(genericPhotos));
 }
 
-// Generic Photo Modal Functions
+// Generic Photo / Observations Modal Functions
 function openGenericPhotoModal() {
-    // Populate location dropdown with all verified niches
-    const locationSelect = document.getElementById('generic-photo-location');
-    locationSelect.innerHTML = '<option value="">Seleziona posizione...</option>';
-    
-    // Add all niches from the data
-    sortedNicheIndices.forEach(originalIndex => {
-        const niche = TECH_NICHES_DATA[originalIndex];
-        const option = document.createElement('option');
-        option.value = `${niche.km}-${niche.binario}`;
-        option.textContent = `Km ${niche.km} - Binario ${niche.binario}`;
-        locationSelect.appendChild(option);
-    });
-    
+    // Populate niche dropdown with all 720 niches
+    populateAllNichesSelect('generic-obs-km');
+    // Populate QE dropdown if not already done
+    populateQESelect('generic-obs-qe');
+    // Reset form state
+    updateGenericObsForm();
     document.getElementById('generic-photo-modal').classList.add('show');
 }
 
 function closeGenericPhotoModal() {
     document.getElementById('generic-photo-modal').classList.remove('show');
     document.getElementById('generic-photo-form').reset();
+    updateGenericObsForm();
+}
+
+function updateGenericObsForm() {
+    const type = document.getElementById('generic-obs-type').value;
+    const camminamentoStatusGroup = document.getElementById('generic-obs-camminamento-status-group');
+    const illuminazioneFaultTypeGroup = document.getElementById('generic-obs-illuminazione-fault-type-group');
+    const funghiGroup = document.getElementById('generic-obs-funghi-group');
+    const corpiGroup = document.getElementById('generic-obs-corpi-group');
+    const qeGroup = document.getElementById('generic-obs-qe-group');
+    const ramoGroup = document.getElementById('generic-obs-ramo-group');
+    const kmGroup = document.getElementById('generic-obs-km-group');
+    const kmSelect = document.getElementById('generic-obs-km');
+
+    // Hide all type-specific fields
+    if (camminamentoStatusGroup) camminamentoStatusGroup.style.display = 'none';
+    if (illuminazioneFaultTypeGroup) illuminazioneFaultTypeGroup.style.display = 'none';
+    if (funghiGroup) funghiGroup.style.display = 'none';
+    if (corpiGroup) corpiGroup.style.display = 'none';
+    if (qeGroup) qeGroup.style.display = 'none';
+    if (ramoGroup) ramoGroup.style.display = 'none';
+    if (kmGroup) kmGroup.style.display = 'none';
+    if (kmSelect) kmSelect.removeAttribute('required');
+
+    if (type === 'camminamento_corrimano') {
+        if (camminamentoStatusGroup) camminamentoStatusGroup.style.display = 'block';
+        if (kmGroup) kmGroup.style.display = 'block';
+        if (kmSelect) kmSelect.setAttribute('required', 'required');
+    } else if (type === 'illuminazione') {
+        if (illuminazioneFaultTypeGroup) illuminazioneFaultTypeGroup.style.display = 'block';
+        if (qeGroup) qeGroup.style.display = 'block';
+        // km group visibility handled by updateGenericObsRamoDiRiferimento
+        updateGenericObsRamoDiRiferimento();
+        updateGenericObsIlluminazioneFaultType();
+    } else if (type === 'segnaletica' || type === 'altro') {
+        if (kmGroup) kmGroup.style.display = 'block';
+        if (kmSelect) kmSelect.setAttribute('required', 'required');
+    }
+}
+
+function updateGenericObsIlluminazioneFaultType() {
+    const faultType = document.getElementById('generic-obs-illuminazione-fault-type').value;
+    const funghiGroup = document.getElementById('generic-obs-funghi-group');
+    const corpiGroup = document.getElementById('generic-obs-corpi-group');
+    const funghiInput = document.getElementById('generic-obs-funghi-count');
+    const corpiSelect = document.getElementById('generic-obs-corpi-count');
+
+    if (funghiGroup) funghiGroup.style.display = 'none';
+    if (corpiGroup) corpiGroup.style.display = 'none';
+    if (funghiInput) { funghiInput.value = ''; funghiInput.removeAttribute('required'); }
+    if (corpiSelect) { corpiSelect.value = ''; corpiSelect.removeAttribute('required'); }
+
+    if (faultType === 'fungo_blu') {
+        if (funghiGroup) funghiGroup.style.display = 'block';
+        if (funghiInput) funghiInput.setAttribute('required', 'required');
+    } else if (faultType === 'corpi_illuminanti') {
+        if (corpiGroup) corpiGroup.style.display = 'block';
+        if (corpiSelect) corpiSelect.setAttribute('required', 'required');
+    }
+}
+
+function updateGenericObsRamoDiRiferimento() {
+    const qeValue = document.getElementById('generic-obs-qe').value;
+    const ramoGroup = document.getElementById('generic-obs-ramo-group');
+    const kmGroup = document.getElementById('generic-obs-km-group');
+    const kmSelect = document.getElementById('generic-obs-km');
+
+    if (qeValue) {
+        if (ramoGroup) ramoGroup.style.display = 'block';
+        if (kmGroup) kmGroup.style.display = 'none';
+        if (kmSelect) kmSelect.removeAttribute('required');
+    } else {
+        if (ramoGroup) ramoGroup.style.display = 'none';
+        if (kmGroup) kmGroup.style.display = 'block';
+        if (kmSelect) kmSelect.setAttribute('required', 'required');
+    }
 }
 
 document.getElementById('generic-photo-form')?.addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    const location = document.getElementById('generic-photo-location').value;
-    const photoInput = document.getElementById('generic-photo-file');
-    const description = document.getElementById('generic-photo-description').value;
-    
+
+    const type = document.getElementById('generic-obs-type').value;
+    const photoInput = document.getElementById('generic-obs-photo');
+    const notes = document.getElementById('generic-obs-notes').value;
+
     if (!photoInput.files[0]) {
         showToast('Per favore allega una foto', 'error');
         return;
     }
-    
+
+    const photoFile = photoInput.files[0];
+
     const genericPhoto = {
         id: Date.now().toString(),
-        location: location,
-        description: description,
+        type: type,
+        notes: notes,
         timestamp: new Date().toISOString()
     };
-    
-    // Read photo
+
+    // Type-specific fields
+    if (type === 'camminamento_corrimano') {
+        const status = document.getElementById('generic-obs-camminamento-status').value;
+        if (status) genericPhoto.camminamentoStatus = status;
+        genericPhoto.km = document.getElementById('generic-obs-km').value;
+    } else if (type === 'illuminazione') {
+        const faultType = document.getElementById('generic-obs-illuminazione-fault-type').value;
+        if (faultType) {
+            genericPhoto.illuminazioneFaultType = faultType;
+            if (faultType === 'fungo_blu') {
+                const funghiCount = document.getElementById('generic-obs-funghi-count').value;
+                if (funghiCount) genericPhoto.funghiCount = funghiCount;
+            } else if (faultType === 'corpi_illuminanti') {
+                const corpiCount = document.getElementById('generic-obs-corpi-count').value;
+                if (corpiCount) genericPhoto.lightCount = corpiCount;
+            }
+        }
+        const qeRiferimento = document.getElementById('generic-obs-qe').value;
+        if (qeRiferimento) {
+            genericPhoto.qeRiferimento = qeRiferimento;
+            const ramoRiferimento = document.getElementById('generic-obs-ramo').value;
+            if (ramoRiferimento) genericPhoto.ramoRiferimento = ramoRiferimento;
+        } else {
+            genericPhoto.km = document.getElementById('generic-obs-km').value;
+        }
+    } else {
+        genericPhoto.km = document.getElementById('generic-obs-km').value;
+    }
+
     const reader = new FileReader();
-    reader.onload = (e) => {
-        genericPhoto.photo = e.target.result;
+    reader.onload = (ev) => {
+        genericPhoto.photo = ev.target.result;
+        genericPhoto.photoMimeType = photoFile.type || 'image/jpeg';
         genericPhotos.push(genericPhoto);
         saveGenericPhotosToLocalStorage();
-        showToast('Foto generica salvata con successo', 'success');
+        showToast('Osservazione salvata con successo', 'success');
         closeGenericPhotoModal();
     };
-    reader.readAsDataURL(photoInput.files[0]);
+    reader.onerror = () => {
+        showToast('Errore nella lettura della foto. Riprovare.', 'error');
+    };
+    reader.readAsDataURL(photoFile);
 });
 
 function loadFromLocalStorage() {
@@ -1581,23 +1688,66 @@ async function actuallyGenerateReport() {
             }
             
             pdf.setFont(undefined, 'bold');
-            pdf.text(`Posizione: ${gp.location}`, 20, y);
+            const gpTypeLabel = gp.type === 'camminamento_corrimano' ? 'Camminamento e corrimano' :
+                               (gp.type === 'illuminazione' ? 'Impianto di illuminazione' :
+                               (gp.type === 'segnaletica' ? 'Segnaletica' :
+                               (gp.type === 'altro' ? 'Altro' : (gp.location ? gp.location : ''))));
+            pdf.text(`Tipo: ${gpTypeLabel}`, 20, y);
             y += 5;
             
             pdf.setFont(undefined, 'normal');
+            
+            // Show camminamento status if available
+            if (gp.camminamentoStatus) {
+                const statusLabel = gp.camminamentoStatus === 'agibile' ? 'Agibile' : 'Non Agibile';
+                pdf.text(`Stato: ${statusLabel}`, 25, y);
+                y += 5;
+            }
+            
+            // Show illuminazione fault type and counts if available
+            if (gp.illuminazioneFaultType) {
+                const faultTypeLabel = gp.illuminazioneFaultType === 'fungo_blu' ? 'Fungo Blu' : 'Corpi Illuminanti';
+                pdf.text(`Tipo guasto: ${faultTypeLabel}`, 25, y);
+                y += 5;
+                if (gp.funghiCount) {
+                    pdf.text(`Funghi blu non funzionanti: ${gp.funghiCount}`, 25, y);
+                    y += 5;
+                } else if (gp.lightCount) {
+                    pdf.text(`Corpi illuminanti non funzionanti: ${gp.lightCount}`, 25, y);
+                    y += 5;
+                }
+            }
+            
+            // Show QE di riferimento if available, otherwise show nicchia
+            if (gp.qeRiferimento) {
+                pdf.text(`QE di riferimento: ${gp.qeRiferimento}`, 25, y);
+                y += 5;
+                if (gp.ramoRiferimento) {
+                    const ramoLabel = gp.ramoRiferimento === 'destro' ? 'Destro' : 'Sinistro';
+                    pdf.text(`Ramo di riferimento: ${ramoLabel}`, 25, y);
+                    y += 5;
+                }
+            } else if (gp.km) {
+                pdf.text(`Progressiva: ${gp.km}`, 25, y);
+                y += 5;
+            }
+            
             pdf.text(`Data: ${new Date(gp.timestamp).toLocaleString('it-IT')}`, 25, y);
             y += 5;
             
             // Description with text wrapping
-            const descriptionLines = pdf.splitTextToSize(`Descrizione: ${gp.description}`, 170);
-            descriptionLines.forEach(line => {
-                if (y > 280) {
-                    pdf.addPage();
-                    y = 20;
-                }
-                pdf.text(line, 25, y);
-                y += 5;
-            });
+            const descField = gp.notes !== undefined ? gp.notes : gp.description;
+            if (descField) {
+                const descriptionLines = pdf.splitTextToSize(`Descrizione: ${descField}`, 170);
+                descriptionLines.forEach(line => {
+                    if (y > 280) {
+                        pdf.addPage();
+                        y = 20;
+                    }
+                    pdf.text(line, 25, y);
+                    y += 5;
+                });
+            }
             
             // Add photo
             if (gp.photo) {

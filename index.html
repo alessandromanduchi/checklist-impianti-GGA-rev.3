@@ -89,7 +89,7 @@
         <button class="fab fab-filter" onclick="openFilterModal()">🔍</button>
     </div>
     <div class="fab-container fab-left-top">
-        <button class="fab fab-photo" onclick="openGenericPhotoModal()" aria-label="Carica Foto Generica">📷</button>
+        <button class="fab fab-photo" onclick="openGenericPhotoModal()" aria-label="Foto generiche e osservazioni">📷</button>
     </div>
     <div class="fab-container">
         <button class="fab fab-warning" onclick="openMalfunctionModal()" aria-label="Segnala Malfunzionamento">⚠️</button>
@@ -340,37 +340,108 @@
         </div>
     </div>
     
-    <!-- Generic Photo Modal -->
+    <!-- Generic Photo / Observations Modal -->
     <div class="modal" id="generic-photo-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">📷 Carica Foto Generica</h3>
+                <h3 class="modal-title">📷 Foto generiche e osservazioni</h3>
                 <button class="modal-close" onclick="closeGenericPhotoModal()">×</button>
             </div>
             
             <form id="generic-photo-form">
                 <div class="form-group">
-                    <label class="form-label">Nicchia/Posizione *</label>
-                    <select class="form-select" id="generic-photo-location" required>
-                        <option value="">Seleziona posizione...</option>
+                    <label class="form-label">Tipo di Osservazione *</label>
+                    <select class="form-select" id="generic-obs-type" required onchange="updateGenericObsForm()">
+                        <option value="">Seleziona...</option>
+                        <option value="camminamento_corrimano">Camminamento e corrimano</option>
+                        <option value="illuminazione">Impianto di illuminazione</option>
+                        <option value="segnaletica">Segnaletica</option>
+                        <option value="altro">Altro</option>
                     </select>
                 </div>
-                
+
+                <!-- Camminamento e corrimano fields -->
+                <div class="form-group" id="generic-obs-camminamento-status-group" style="display: none;">
+                    <label class="form-label">Stato Camminamento *</label>
+                    <select class="form-select" id="generic-obs-camminamento-status">
+                        <option value="">Seleziona...</option>
+                        <option value="agibile">Agibile</option>
+                        <option value="non_agibile">Non Agibile</option>
+                    </select>
+                </div>
+
+                <!-- Illuminazione fields -->
+                <div class="form-group" id="generic-obs-illuminazione-fault-type-group" style="display: none;">
+                    <label class="form-label">Tipo di Guasto Illuminazione *</label>
+                    <select class="form-select" id="generic-obs-illuminazione-fault-type" onchange="updateGenericObsIlluminazioneFaultType()">
+                        <option value="">Seleziona...</option>
+                        <option value="fungo_blu">Fungo Blu</option>
+                        <option value="corpi_illuminanti">Corpi Illuminanti</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="generic-obs-funghi-group" style="display: none;">
+                    <label class="form-label">Numero Funghi Blu Non Funzionanti *</label>
+                    <input type="number" class="form-input" id="generic-obs-funghi-count" min="1"
+                           placeholder="Inserisci numero funghi blu non funzionanti">
+                </div>
+
+                <div class="form-group" id="generic-obs-corpi-group" style="display: none;">
+                    <label class="form-label">Numero Corpi Illuminanti Non Funzionanti *</label>
+                    <select class="form-select" id="generic-obs-corpi-count">
+                        <option value="">Seleziona...</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value=">10">&gt;10</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="generic-obs-qe-group" style="display: none;">
+                    <label class="form-label">QE di riferimento</label>
+                    <select class="form-select" id="generic-obs-qe" onchange="updateGenericObsRamoDiRiferimento()">
+                        <option value="">Seleziona QE...</option>
+                    </select>
+                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); font-style: italic;">
+                        a cura di IG
+                    </div>
+                </div>
+
+                <div class="form-group" id="generic-obs-ramo-group" style="display: none;">
+                    <label class="form-label">Ramo di riferimento</label>
+                    <select class="form-select" id="generic-obs-ramo">
+                        <option value="">Seleziona ramo...</option>
+                        <option value="destro">Destro</option>
+                        <option value="sinistro">Sinistro</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="generic-obs-km-group" style="display: none;">
+                    <label class="form-label">Nicchia di riferimento *</label>
+                    <select class="form-select" id="generic-obs-km">
+                        <option value="">Seleziona nicchia...</option>
+                    </select>
+                </div>
+
                 <div class="form-group">
-                    <label class="form-label">Fotografia *</label>
-                    <input type="file" class="form-control" id="generic-photo-file" accept="image/*" required>
+                    <label class="form-label">Foto *</label>
+                    <input type="file" class="form-input" id="generic-obs-photo" accept="image/*" capture="environment" required>
+                    <div id="generic-obs-photo-preview" class="photo-preview"></div>
                 </div>
-                
+
                 <div class="form-group">
-                    <label class="form-label">Descrizione Problema/Osservazione *</label>
-                    <textarea class="form-control" id="generic-photo-description" rows="4" 
-                        placeholder="Descrivi il problema o l'osservazione riscontrata..." required></textarea>
+                    <label class="form-label">Descrizione</label>
+                    <textarea class="form-input" id="generic-obs-notes" rows="3" placeholder="Descrizione del malfunzionamento (opzionale)..."></textarea>
                 </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeGenericPhotoModal()">Annulla</button>
-                    <button type="submit" class="btn btn-primary">Salva Foto</button>
-                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Salva Osservazione</button>
             </form>
         </div>
     </div>
