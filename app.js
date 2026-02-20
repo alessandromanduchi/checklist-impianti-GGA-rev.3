@@ -26,8 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // Register Service Worker for PWA
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/checklist-impianti-GGA-rev.2/service-worker.js', {
-            scope: '/checklist-impianti-GGA-rev.2/'
+        navigator.serviceWorker.register('/checklist-impianti-GGA-rev.3-copilot-add-nicchia-verifica-report/service-worker.js', {
+            scope: '/checklist-impianti-GGA-rev.3-copilot-add-nicchia-verifica-report/'
         })
             .then(registration => {
                 console.log('Service Worker registered:', registration);
@@ -734,16 +734,7 @@ function updateIlluminazioneFaultType() {
 }
 
 
-document.getElementById('illuminazione-fault-type')?.addEventListener('change', function() {
-    const faultType = this.value;
-    const corpiCountGroup = document.getElementById('corpi-count-group');
-    
-    if (faultType === 'corpi_illuminanti') {
-        corpiCountGroup.style.display = 'block';
-    } else {
-        corpiCountGroup.style.display = 'none';
-    }
-});
+// Note: illuminazione-fault-type change is handled by updateIlluminazioneFaultType() via onchange attribute
 
 function populateAllNichesSelect() {
     const select = document.getElementById('malfunction-km');
@@ -965,7 +956,6 @@ function clearAllData() {
     if (checklist) {
         checklist.innerHTML = '';
     }
-    populateStartNicheSelect();
     document.getElementById('config-modal').classList.add('show');
 }
 
@@ -1242,7 +1232,7 @@ async function actuallyGenerateReport() {
         pdf.setTextColor(255, 255, 255); // White text
         pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('⚠ APPRESTAMENTI NON FUNZIONANTI', 20, y + 7);
+        pdf.text('[!] APPRESTAMENTI NON FUNZIONANTI', 20, y + 7);
         pdf.setTextColor(0, 0, 0); // Reset to black
         y += 15;
         
@@ -1250,7 +1240,7 @@ async function actuallyGenerateReport() {
         pdf.setFont(undefined, 'normal');
         
         nonFunctionalItems.forEach(item => {
-            const niche = TECH_NICHES_DATA.find(n => n.id === item.id);
+            const niche = TECH_NICHES_DATA.find(n => n.km === item.km && n.binario === item.binario);
             if (niche) {
                 if (y > 275) {
                     pdf.addPage();
@@ -1291,7 +1281,7 @@ async function actuallyGenerateReport() {
         pdf.setTextColor(255, 255, 255); // White text
         pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('💬 FEEDBACK OPERATORE', 20, y + 7);
+        pdf.text('>> FEEDBACK OPERATORE', 20, y + 7);
         pdf.setTextColor(0, 0, 0); // Reset to black
         y += 15;
         
@@ -1350,7 +1340,7 @@ async function actuallyGenerateReport() {
         pdf.setTextColor(255, 255, 255); // White text
         pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('📋 DETTAGLIO VERIFICHE', 20, y + 7);
+        pdf.text('[=] DETTAGLIO VERIFICHE', 20, y + 7);
         pdf.setTextColor(0, 0, 0); // Reset to black
         y += 15;
         
@@ -1450,7 +1440,7 @@ async function actuallyGenerateReport() {
         pdf.setTextColor(255, 255, 255); // White text
         pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('⚠️ SEGNALAZIONI MALFUNZIONAMENTI', 20, y + 7);
+        pdf.text('[!] SEGNALAZIONI MALFUNZIONAMENTI', 20, y + 7);
         pdf.setTextColor(0, 0, 0); // Reset to black
         y += 15;
         
@@ -1562,7 +1552,7 @@ async function actuallyGenerateReport() {
         pdf.setTextColor(255, 255, 255); // White text
         pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('📷 FOTO GENERICHE E OSSERVAZIONI', 20, y + 7);
+        pdf.text('[*] FOTO GENERICHE E OSSERVAZIONI', 20, y + 7);
         pdf.setTextColor(0, 0, 0); // Reset to black
         y += 15;
         
