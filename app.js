@@ -865,12 +865,17 @@ function updateGenericObsForm() {
     const ramoGroup = document.getElementById('generic-obs-ramo-group');
     const kmGroup = document.getElementById('generic-obs-km-group');
     const kmSelect = document.getElementById('generic-obs-km');
+    const funghiInput = document.getElementById('generic-obs-funghi-count');
+    const corpiSelect = document.getElementById('generic-obs-corpi-count');
 
-    // Hide all type-specific fields
+    // Hide all type-specific fields and remove any dynamically-added required attributes
+    // so that hidden fields don't block form re-submission (e.g. on mobile Safari)
     if (camminamentoStatusGroup) camminamentoStatusGroup.style.display = 'none';
     if (illuminazioneFaultTypeGroup) illuminazioneFaultTypeGroup.style.display = 'none';
     if (funghiGroup) funghiGroup.style.display = 'none';
+    if (funghiInput) funghiInput.removeAttribute('required');
     if (corpiGroup) corpiGroup.style.display = 'none';
+    if (corpiSelect) corpiSelect.removeAttribute('required');
     if (qeGroup) qeGroup.style.display = 'none';
     if (ramoGroup) ramoGroup.style.display = 'none';
     if (kmGroup) kmGroup.style.display = 'none';
