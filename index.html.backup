@@ -88,9 +88,6 @@
     <div class="fab-container fab-top-right">
         <button class="fab fab-filter" onclick="openFilterModal()">🔍</button>
     </div>
-    <div class="fab-container">
-        <button class="fab fab-warning" onclick="openMalfunctionModal()" aria-label="Segnala Malfunzionamento">⚠️</button>
-    </div>
     
     <!-- Filter Modal -->
     <div class="modal" id="filter-modal">
@@ -194,55 +191,25 @@
                     <label class="form-label">Tipo di Malfunzionamento *</label>
                     <select class="form-select" id="malfunction-type" required onchange="updateMalfunctionForm()">
                         <option value="">Seleziona...</option>
-                        <option value="camminamento_corrimano">Camminamento e corrimano</option>
-                        <option value="illuminazione">Impianto di illuminazione</option>
-                        <option value="segnaletica">Segnaletica</option>
-                        <option value="altro">Altro</option>
+                        <option value="camminamento">Camminamento</option>
+                        <option value="corrimano">Corrimano</option>
+                        <option value="illuminazione">Impianto di Illuminazione</option>
+                        <option value="segnaletica_generale">Segnaletica generale</option>
                     </select>
                 </div>
                 
-                <!-- Camminamento e corrimano fields -->
-                <div class="form-group" id="camminamento-status-group" style="display: none;">
-                    <label class="form-label">Stato Camminamento *</label>
-                    <select class="form-select" id="camminamento-status">
-                        <option value="">Seleziona...</option>
-                        <option value="agibile">Agibile</option>
-                        <option value="non_agibile">Non Agibile</option>
-                    </select>
-                </div>
-                
-                <!-- Illuminazione fields -->
-                <div class="form-group" id="illuminazione-fault-type-group" style="display: none;">
+                <div class="form-group" id="illuminazione-detail" style="display: none;">
                     <label class="form-label">Tipo di Guasto Illuminazione *</label>
-                    <select class="form-select" id="illuminazione-fault-type" required onchange="updateIlluminazioneFaultType()">
+                    <select class="form-select" id="illuminazione-fault-type">
                         <option value="">Seleziona...</option>
                         <option value="fungo_blu">Fungo Blu</option>
                         <option value="corpi_illuminanti">Corpi Illuminanti</option>
                     </select>
                 </div>
-
-                <div class="form-group" id="illuminazione-funghi-group" style="display: none;">
-                    <label class="form-label">Numero Funghi Blu Non Funzionanti *</label>
-                    <input type="number" class="form-input" id="illuminazione-funghi-count" min="1" 
-                           placeholder="Inserisci numero funghi blu non funzionanti">
-                </div>
-
-                <div class="form-group" id="illuminazione-corpi-group" style="display: none;">
+                
+                <div class="form-group" id="corpi-count-group" style="display: none;">
                     <label class="form-label">Numero Corpi Illuminanti Non Funzionanti *</label>
-                    <select class="form-select" id="illuminazione-corpi-count">
-                        <option value="">Seleziona...</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                        <option value=">10">&gt;10</option>
-                    </select>
+                    <input type="number" class="form-input" id="corpi-count" min="1" placeholder="Es: 3">
                 </div>
                 
                 <div class="form-group" id="qe-riferimento-group" style="display: none;">
@@ -278,8 +245,8 @@
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">Descrizione</label>
-                    <textarea class="form-input" id="malfunction-notes" rows="3" placeholder="Descrizione del malfunzionamento (opzionale)..."></textarea>
+                    <label class="form-label">Note Aggiuntive</label>
+                    <textarea class="form-input" id="malfunction-notes" rows="3" placeholder="Inserisci eventuali note..."></textarea>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-block">Salva Segnalazione</button>
@@ -320,15 +287,15 @@
             
             <form id="config-form">
                 <div class="form-group">
-                    <label class="form-label">Ordine di Verifica *</label>
+                    <label class="form-label">Punto di Partenza *</label>
                     <select class="form-select" id="direction" required>
-                        <option value="">Seleziona ordine...</option>
-                        <option value="vernio">Ordine Crescente (37+259 → 55+742)</option>
-                        <option value="san-benedetto">Ordine Decrescente (55+742 → 37+259)</option>
+                        <option value="">Seleziona punto di partenza...</option>
+                        <option value="vernio">Vernio (37+259) - Ordine Crescente</option>
+                        <option value="san-benedetto">San Benedetto Val di Sambro (55+742) - Ordine Decrescente</option>
                     </select>
                     <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">
-                        <p style="margin: 0.25rem 0;">• <strong>Crescente</strong>: dalla progressiva km 37+259 verso km 55+742</p>
-                        <p style="margin: 0.25rem 0;">• <strong>Decrescente</strong>: dalla progressiva km 55+742 verso km 37+259</p>
+                        <p style="margin: 0.25rem 0;">• <strong>Vernio</strong>: verifica in ordine crescente di km (37+259 → 55+742)</p>
+                        <p style="margin: 0.25rem 0;">• <strong>San Benedetto</strong>: verifica in ordine decrescente di km (55+742 → 37+259)</p>
                     </div>
                 </div>
                 

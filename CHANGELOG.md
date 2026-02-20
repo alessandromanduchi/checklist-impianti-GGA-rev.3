@@ -126,5 +126,5 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
 - `Corretto` - per bug fix
 - `Sicurezza` - in caso di vulnerabilità
 
-[1.0.0]: https://github.com/tuousername/nichesafe/releases/tag/v1.0.0
-[Unreleased]: https://github.com/tuousername/nichesafe/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/alessandromanduchi/checklist-impianti-GGA-rev.3/releases/tag/v1.0.0
+[Unreleased]: https://github.com/alessandromanduchi/checklist-impianti-GGA-rev.3/compare/v1.0.0...HEAD

@@ -11,9 +11,10 @@ let currentFilter = 'all'; // Equipment type filter: 'all', 'tem', 'idrante', 'q
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    // Clear checklist data on page reload - fresh start every time
-    // But keep malfunctions and genericPhotos until PDF is generated
+    // Clear all data on page reload - fresh start every time
     localStorage.removeItem('checklistData');
+    localStorage.removeItem('malfunctions');
+    localStorage.removeItem('genericPhotos');
     localStorage.removeItem('verificationConfig');
     
     // Always start with config modal
@@ -26,8 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // Register Service Worker for PWA
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/checklist-impianti-GGA-rev.3-copilot-add-nicchia-verifica-report/service-worker.js', {
-            scope: '/checklist-impianti-GGA-rev.3-copilot-add-nicchia-verifica-report/'
+        navigator.serviceWorker.register('/checklist-impianti-GGA-rev.2/service-worker.js', {
+            scope: '/checklist-impianti-GGA-rev.2/'
         })
             .then(registration => {
                 console.log('Service Worker registered:', registration);
@@ -119,16 +120,24 @@ function initializeChecklist() {
                 item.checks.idrante_stato = null;
                 item.checks.idrante_sigillo = null;
                 item.checks.idrante_segnaletica = null;
+                item.needsPhoto.idrante_stato = false;
+                item.needsPhoto.idrante_sigillo = false;
+                item.needsPhoto.idrante_segnaletica = false;
             }
             if (type === 'tem') {
                 item.checks.tem_stato = null;
                 // TEM does not require seal verification
                 item.checks.tem_segnaletica = null;
+                item.needsPhoto.tem_stato = false;
+                item.needsPhoto.tem_segnaletica = false;
             }
             if (type === 'quadro_vvf') {
                 item.checks.quadro_stato = null;
                 item.checks.quadro_sigillo = null;
                 item.checks.quadro_segnaletica = null;
+                item.needsPhoto.quadro_stato = false;
+                item.needsPhoto.quadro_sigillo = false;
+                item.needsPhoto.quadro_segnaletica = false;
             }
         });
         
@@ -275,7 +284,16 @@ function createChecklistItem(item, index) {
                             onchange="handleCheck('${item.id}', '${typePrefix}_stato', 'non_funzionante')">
                         <span>Non Funzionante</span>
                     </label>
-                </div>`;
+                </div>
+                <div class="photo-btn" id="photo-btn-${typePrefix}-stato-${item.id}">
+                    <input type="file" accept="image/*" capture="environment" multiple 
+                        onchange="handlePhotos(event, '${item.id}', '${typePrefix}_stato')" 
+                        style="display: none;" id="photo-input-${typePrefix}-stato-${item.id}">
+                    <label for="photo-input-${typePrefix}-stato-${item.id}" style="cursor: pointer; display: block;">
+                        Allega Foto (obbligatoria)
+                    </label>
+                </div>
+                <div id="photos-${typePrefix}-stato-${item.id}" class="photo-preview"></div>`;
         
         // Only show seal check for non-TEM equipment
         if (type !== 'tem') {
@@ -292,7 +310,16 @@ function createChecklistItem(item, index) {
                             onchange="handleCheck('${item.id}', '${typePrefix}_sigillo', 'manomesso')">
                         <span>Manomesso</span>
                     </label>
-                </div>`;
+                </div>
+                <div class="photo-btn" id="photo-btn-${typePrefix}-sigillo-${item.id}">
+                    <input type="file" accept="image/*" capture="environment" multiple 
+                        onchange="handlePhotos(event, '${item.id}', '${typePrefix}_sigillo')" 
+                        style="display: none;" id="photo-input-${typePrefix}-sigillo-${item.id}">
+                    <label for="photo-input-${typePrefix}-sigillo-${item.id}" style="cursor: pointer; display: block;">
+                        Allega Foto (obbligatoria)
+                    </label>
+                </div>
+                <div id="photos-${typePrefix}-sigillo-${item.id}" class="photo-preview"></div>`;
         }
         
         checksHTML += `
@@ -309,6 +336,15 @@ function createChecklistItem(item, index) {
                         <span>Assente</span>
                     </label>
                 </div>
+                <div class="photo-btn" id="photo-btn-${typePrefix}-segnaletica-${item.id}">
+                    <input type="file" accept="image/*" capture="environment" multiple 
+                        onchange="handlePhotos(event, '${item.id}', '${typePrefix}_segnaletica')" 
+                        style="display: none;" id="photo-input-${typePrefix}-segnaletica-${item.id}">
+                    <label for="photo-input-${typePrefix}-segnaletica-${item.id}" style="cursor: pointer; display: block;">
+                        Allega Foto (obbligatoria)
+                    </label>
+                </div>
+                <div id="photos-${typePrefix}-segnaletica-${item.id}" class="photo-preview"></div>
             </div>
         `;
     });
@@ -339,6 +375,14 @@ function handleCheck(itemId, checkType, value) {
     
     item.checks[checkType] = value;
     
+    // Determine if photo is needed (for negative responses)
+    const needsPhoto = value === 'non_funzionante' || value === 'manomesso' || value === 'assente';
+    
+    // Show/hide photo button
+    const photoBtn = document.getElementById(`photo-btn-${checkType}-${itemId}`);
+    if (photoBtn) {
+    }
+    
     // Update radio label styling
     const radios = document.querySelectorAll(`input[name="${checkType}-${itemId}"]`);
     radios.forEach(radio => {
@@ -362,11 +406,64 @@ function handleCheck(itemId, checkType, value) {
     saveToLocalStorage();
 }
 
+function handlePhotos(event, itemId, checkType) {
+    const item = checklistData.find(i => i.id === itemId);
+    if (!item) return;
+    
+    const files = Array.from(event.target.files);
+    
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            if (!item.photosByType[checkType]) {
+                item.photosByType[checkType] = [];
+            }
+            item.photosByType[checkType].push(e.target.result);
+            displayPhotos(itemId, checkType);
+            updateItemCompletion(itemId);
+            saveToLocalStorage();
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function displayPhotos(itemId, checkType) {
+    const item = checklistData.find(i => i.id === itemId);
+    if (!item) return;
+    
+    const container = document.getElementById(`photos-${checkType}-${itemId}`);
+    if (!container) return;
+    
+    const photos = item.photosByType[checkType] || [];
+    container.innerHTML = '';
+    
+    photos.forEach((photo, index) => {
+        const div = document.createElement('div');
+        div.className = 'photo-item';
+        div.innerHTML = `
+            <img src="${photo}" alt="Foto ${index + 1}">
+            <button class="photo-remove" onclick="removePhoto('${itemId}', '${checkType}', ${index})">×</button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function removePhoto(itemId, checkType, photoIndex) {
+    const item = checklistData.find(i => i.id === itemId);
+    if (!item) return;
+    
+    item.photosByType[checkType].splice(photoIndex, 1);
+    displayPhotos(itemId, checkType);
+    updateItemCompletion(itemId);
+    saveToLocalStorage();
+}
+
 function updateItemCompletion(itemId) {
     const item = checklistData.find(i => i.id === itemId);
     if (!item) return;
     
     let allChecked = true;
+    let allPhotosProvided = true;
     let hasProblems = false;
     let hasAnyCheck = false; // Track if at least one check is done
     
@@ -395,6 +492,18 @@ function updateItemCompletion(itemId) {
             }
         }
         
+        // Check if photos are required and provided
+        if (item.needsPhoto[`${prefix}_stato`] && (!item.photosByType[`${prefix}_stato`] || item.photosByType[`${prefix}_stato`].length === 0)) {
+            allPhotosProvided = false;
+        }
+        // Only check sigillo photos for non-TEM equipment
+        if (type !== 'tem' && item.needsPhoto[`${prefix}_sigillo`] && (!item.photosByType[`${prefix}_sigillo`] || item.photosByType[`${prefix}_sigillo`].length === 0)) {
+            allPhotosProvided = false;
+        }
+        if (item.needsPhoto[`${prefix}_segnaletica`] && (!item.photosByType[`${prefix}_segnaletica`] || item.photosByType[`${prefix}_segnaletica`].length === 0)) {
+            allPhotosProvided = false;
+        }
+        
         // Check if this item has ALL checks in worst state (critically failed)
         // For TEM: stato=non_funzionante AND segnaletica=assente
         // For others: stato=non_funzionante AND sigillo=manomesso AND segnaletica=assente
@@ -413,7 +522,7 @@ function updateItemCompletion(itemId) {
     }
     
     // NEW LOGIC: Mark as verified if at least one check is done
-    const isFullyComplete = allChecked; // All checks are done
+    const isFullyComplete = allChecked && allPhotosProvided;
     item.completed = hasAnyCheck; // Verified if ANY check is done
     item.isFullyComplete = isFullyComplete; // Track if ALL checks are done
     item.hasProblems = hasProblems;
@@ -495,26 +604,13 @@ function closeMalfunctionModal() {
 
 function updateMalfunctionForm() {
     const type = document.getElementById('malfunction-type').value;
-    const camminamentoStatusGroup = document.getElementById('camminamento-status-group');
-    const illuminazioneFaultTypeGroup = document.getElementById('illuminazione-fault-type-group');
-    const illuminazioneFunghiGroup = document.getElementById('illuminazione-funghi-group');
-    const illuminazioneCorpiGroup = document.getElementById('illuminazione-corpi-group');
+    const illuminazioneDetail = document.getElementById('illuminazione-detail');
+    const corpiCountGroup = document.getElementById('corpi-count-group');
     const qeRiferimentoGroup = document.getElementById('qe-riferimento-group');
     const ramoRiferimentoGroup = document.getElementById('ramo-riferimento-group');
     
-    // Hide all type-specific fields initially
-    if (camminamentoStatusGroup) camminamentoStatusGroup.style.display = 'none';
-    if (illuminazioneFaultTypeGroup) illuminazioneFaultTypeGroup.style.display = 'none';
-    if (illuminazioneFunghiGroup) illuminazioneFunghiGroup.style.display = 'none';
-    if (illuminazioneCorpiGroup) illuminazioneCorpiGroup.style.display = 'none';
-    if (qeRiferimentoGroup) qeRiferimentoGroup.style.display = 'none';
-    if (ramoRiferimentoGroup) ramoRiferimentoGroup.style.display = 'none';
-    
-    // Show type-specific fields based on selected type
-    if (type === 'camminamento_corrimano') {
-        camminamentoStatusGroup.style.display = 'block';
-    } else if (type === 'illuminazione') {
-        illuminazioneFaultTypeGroup.style.display = 'block';
+    if (type === 'illuminazione') {
+        illuminazioneDetail.style.display = 'block';
         qeRiferimentoGroup.style.display = 'block';
         
         // Populate QE di riferimento dropdown if not already populated
@@ -683,8 +779,12 @@ function updateMalfunctionForm() {
                 qeSelect.appendChild(option);
             });
         }
+    } else {
+        illuminazioneDetail.style.display = 'none';
+        corpiCountGroup.style.display = 'none';
+        qeRiferimentoGroup.style.display = 'none';
+        ramoRiferimentoGroup.style.display = 'none';
     }
-    // For segnaletica and altro, no additional fields needed
 }
 
 function updateRamoDiRiferimento() {
@@ -706,35 +806,16 @@ function updateRamoDiRiferimento() {
     }
 }
 
-function updateIlluminazioneFaultType() {
-    const faultType = document.getElementById('illuminazione-fault-type').value;
-    const funghiGroup = document.getElementById('illuminazione-funghi-group');
-    const corpiGroup = document.getElementById('illuminazione-corpi-group');
-    const funghiInput = document.getElementById('illuminazione-funghi-count');
-    const corpiSelect = document.getElementById('illuminazione-corpi-count');
+document.getElementById('illuminazione-fault-type')?.addEventListener('change', function() {
+    const faultType = this.value;
+    const corpiCountGroup = document.getElementById('corpi-count-group');
     
-    // Hide both count fields initially
-    if (funghiGroup) funghiGroup.style.display = 'none';
-    if (corpiGroup) corpiGroup.style.display = 'none';
-    
-    // Clear values when switching types
-    if (funghiInput) funghiInput.value = '';
-    if (corpiSelect) corpiSelect.value = '';
-    
-    // Show appropriate count field based on fault type
-    if (faultType === 'fungo_blu') {
-        funghiGroup.style.display = 'block';
-        funghiInput.setAttribute('required', 'required');
-        corpiSelect.removeAttribute('required');
-    } else if (faultType === 'corpi_illuminanti') {
-        corpiGroup.style.display = 'block';
-        corpiSelect.setAttribute('required', 'required');
-        funghiInput.removeAttribute('required');
+    if (faultType === 'corpi_illuminanti') {
+        corpiCountGroup.style.display = 'block';
+    } else {
+        corpiCountGroup.style.display = 'none';
     }
-}
-
-
-// Note: illuminazione-fault-type change is handled by updateIlluminazioneFaultType() via onchange attribute
+});
 
 function populateAllNichesSelect() {
     const select = document.getElementById('malfunction-km');
@@ -769,30 +850,12 @@ document.getElementById('malfunction-form')?.addEventListener('submit', async fu
         timestamp: new Date().toISOString()
     };
     
-    // Type-specific fields
-    if (type === 'camminamento_corrimano') {
-        const status = document.getElementById('camminamento-status').value;
-        if (status) {
-            malfunction.camminamentoStatus = status;
-        }
-    } else if (type === 'illuminazione') {
-        // Get fault type (fungo_blu or corpi_illuminanti)
+    if (type === 'illuminazione') {
         const faultType = document.getElementById('illuminazione-fault-type').value;
-        if (faultType) {
-            malfunction.illuminazioneFaultType = faultType;
-            
-            // Get count based on fault type
-            if (faultType === 'fungo_blu') {
-                const funghiCount = document.getElementById('illuminazione-funghi-count').value;
-                if (funghiCount) {
-                    malfunction.funghiCount = funghiCount;
-                }
-            } else if (faultType === 'corpi_illuminanti') {
-                const corpiCount = document.getElementById('illuminazione-corpi-count').value;
-                if (corpiCount) {
-                    malfunction.lightCount = corpiCount;
-                }
-            }
+        malfunction.illuminazioneFaultType = faultType;
+        
+        if (faultType === 'corpi_illuminanti') {
+            malfunction.corpiCount = document.getElementById('corpi-count').value;
         }
         
         // Add QE di riferimento and Ramo di riferimento if provided
@@ -815,8 +878,6 @@ document.getElementById('malfunction-form')?.addEventListener('submit', async fu
     reader.onload = (e) => {
         malfunction.photo = e.target.result;
         malfunctions.push(malfunction);
-        console.log('Malfunction saved:', malfunction);
-        console.log('Total malfunctions:', malfunctions.length);
         saveMalfunctionsToLocalStorage();
         showToast('Segnalazione salvata con successo', 'success');
     };
@@ -956,6 +1017,7 @@ function clearAllData() {
     if (checklist) {
         checklist.innerHTML = '';
     }
+    populateStartNicheSelect();
     document.getElementById('config-modal').classList.add('show');
 }
 
@@ -1027,15 +1089,23 @@ function navigateToNiche() {
                         item.checks.idrante_stato = null;
                         item.checks.idrante_sigillo = null;
                         item.checks.idrante_segnaletica = null;
+                        item.needsPhoto.idrante_stato = false;
+                        item.needsPhoto.idrante_sigillo = false;
+                        item.needsPhoto.idrante_segnaletica = false;
                     }
                     if (type === 'tem') {
                         item.checks.tem_stato = null;
                         item.checks.tem_segnaletica = null;
+                        item.needsPhoto.tem_stato = false;
+                        item.needsPhoto.tem_segnaletica = false;
                     }
                     if (type === 'quadro_vvf') {
                         item.checks.quadro_stato = null;
                         item.checks.quadro_sigillo = null;
                         item.checks.quadro_segnaletica = null;
+                        item.needsPhoto.quadro_stato = false;
+                        item.needsPhoto.quadro_sigillo = false;
+                        item.needsPhoto.quadro_segnaletica = false;
                     }
                 });
                 
@@ -1121,10 +1191,6 @@ async function generateReport() {
 async function actuallyGenerateReport() {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF();
-    
-    // Debug: Log malfunctions at PDF generation time
-    console.log('Generating PDF - Malfunctions:', malfunctions);
-    console.log('Malfunctions count:', malfunctions.length);
     
     let y = 20;
     
@@ -1232,7 +1298,7 @@ async function actuallyGenerateReport() {
         pdf.setTextColor(255, 255, 255); // White text
         pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('[!] APPRESTAMENTI NON FUNZIONANTI', 20, y + 7);
+        pdf.text('⚠ APPRESTAMENTI NON FUNZIONANTI', 20, y + 7);
         pdf.setTextColor(0, 0, 0); // Reset to black
         y += 15;
         
@@ -1240,7 +1306,7 @@ async function actuallyGenerateReport() {
         pdf.setFont(undefined, 'normal');
         
         nonFunctionalItems.forEach(item => {
-            const niche = TECH_NICHES_DATA.find(n => n.km === item.km && n.binario === item.binario);
+            const niche = TECH_NICHES_DATA.find(n => n.id === item.id);
             if (niche) {
                 if (y > 275) {
                     pdf.addPage();
@@ -1281,7 +1347,7 @@ async function actuallyGenerateReport() {
         pdf.setTextColor(255, 255, 255); // White text
         pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('>> FEEDBACK OPERATORE', 20, y + 7);
+        pdf.text('💬 FEEDBACK OPERATORE', 20, y + 7);
         pdf.setTextColor(0, 0, 0); // Reset to black
         y += 15;
         
@@ -1340,7 +1406,7 @@ async function actuallyGenerateReport() {
         pdf.setTextColor(255, 255, 255); // White text
         pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('[=] DETTAGLIO VERIFICHE', 20, y + 7);
+        pdf.text('📋 DETTAGLIO VERIFICHE', 20, y + 7);
         pdf.setTextColor(0, 0, 0); // Reset to black
         y += 15;
         
@@ -1410,6 +1476,39 @@ async function actuallyGenerateReport() {
                     pdf.setTextColor(0, 0, 0); // Reset to black
                 }
                 y += 5;
+                
+                // Add photos for this check type if present
+                const photoTypes = type === 'tem' 
+                    ? [`${prefix}_stato`, `${prefix}_segnaletica`]
+                    : [`${prefix}_stato`, `${prefix}_sigillo`, `${prefix}_segnaletica`];
+                for (const photoType of photoTypes) {
+                    const photos = item.photosByType[photoType] || [];
+                    if (photos.length > 0) {
+                        const checkName = photoType.split('_').pop();
+                        pdf.text(`    - Foto ${checkName}: ${photos.length} allegata/e`, 30, y);
+                        y += 5;
+                        
+                        // Add photos to PDF
+                        for (let i = 0; i < photos.length; i++) {
+                            if (y > 200) {
+                                pdf.addPage();
+                                y = 20;
+                            }
+                            
+                            try {
+                                const imgData = photos[i];
+                                const imgWidth = 80;
+                                const imgHeight = 60;
+                                pdf.addImage(imgData, 'JPEG', 30, y, imgWidth, imgHeight);
+                                y += imgHeight + 5;
+                            } catch (error) {
+                                console.error('Error adding image to PDF:', error);
+                                pdf.text(`      [Errore caricamento immagine ${i + 1}]`, 30, y);
+                                y += 5;
+                            }
+                        }
+                    }
+                }
             }
             
             y += 5;
@@ -1425,9 +1524,7 @@ async function actuallyGenerateReport() {
     }
     
     // Malfunctions
-    console.log('PDF Generation - Checking malfunctions:', malfunctions.length);
     if (malfunctions.length > 0) {
-        console.log('Adding malfunction section to PDF');
         if (y > 250) {
             pdf.addPage();
             y = 20;
@@ -1440,7 +1537,7 @@ async function actuallyGenerateReport() {
         pdf.setTextColor(255, 255, 255); // White text
         pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('[!] SEGNALAZIONI MALFUNZIONAMENTI', 20, y + 7);
+        pdf.text('⚠️ SEGNALAZIONI MALFUNZIONAMENTI', 20, y + 7);
         pdf.setTextColor(0, 0, 0); // Reset to black
         y += 15;
         
@@ -1448,43 +1545,19 @@ async function actuallyGenerateReport() {
         pdf.setFont(undefined, 'normal');
         
         for (const m of malfunctions) {
-            console.log('Adding malfunction to PDF:', m);
             if (y > 270) {
                 pdf.addPage();
                 y = 20;
             }
             
             pdf.setFont(undefined, 'bold');
-            const typeLabel = m.type === 'camminamento_corrimano' ? 'Camminamento e corrimano' : 
-                             (m.type === 'segnaletica' ? 'Segnaletica' : 
-                             (m.type === 'altro' ? 'Altro' : 'Impianto di illuminazione'));
+            const typeLabel = m.type === 'camminamento' ? 'Camminamento' : 
+                             (m.type === 'corrimano' ? 'Corrimano' : 
+                             (m.type === 'segnaletica_generale' ? 'Segnaletica generale' : 'Impianto Illuminazione'));
             pdf.text(`Tipo: ${typeLabel}`, 20, y);
             y += 5;
             
             pdf.setFont(undefined, 'normal');
-            
-            // Show camminamento status if available
-            if (m.camminamentoStatus) {
-                const statusLabel = m.camminamentoStatus === 'agibile' ? 'Agibile' : 'Non Agibile';
-                pdf.text(`Stato: ${statusLabel}`, 25, y);
-                y += 5;
-            }
-            
-            // Show illuminazione fault type and counts if available
-            if (m.illuminazioneFaultType) {
-                const faultTypeLabel = m.illuminazioneFaultType === 'fungo_blu' ? 'Fungo Blu' : 'Corpi Illuminanti';
-                pdf.text(`Tipo guasto: ${faultTypeLabel}`, 25, y);
-                y += 5;
-                
-                // Show appropriate count
-                if (m.funghiCount) {
-                    pdf.text(`Funghi blu non funzionanti: ${m.funghiCount}`, 25, y);
-                    y += 5;
-                } else if (m.lightCount) {
-                    pdf.text(`Corpi illuminanti non funzionanti: ${m.lightCount}`, 25, y);
-                    y += 5;
-                }
-            }
             
             // Show QE di riferimento if available (for illuminazione), otherwise show Progressiva
             if (m.qeRiferimento) {
@@ -1502,8 +1575,19 @@ async function actuallyGenerateReport() {
                 y += 5;
             }
             
+            if (m.illuminazioneFaultType) {
+                const faultLabel = m.illuminazioneFaultType === 'fungo_blu' ? 'Fungo Blu' : 'Corpi Illuminanti';
+                pdf.text(`Tipo guasto: ${faultLabel}`, 25, y);
+                y += 5;
+                
+                if (m.corpiCount) {
+                    pdf.text(`Corpi non funzionanti: ${m.corpiCount}`, 25, y);
+                    y += 5;
+                }
+            }
+            
             if (m.notes) {
-                const lines = pdf.splitTextToSize(`Descrizione: ${m.notes}`, 170);
+                const lines = pdf.splitTextToSize(`Note: ${m.notes}`, 170);
                 lines.forEach(line => {
                     if (y > 280) {
                         pdf.addPage();
@@ -1552,7 +1636,7 @@ async function actuallyGenerateReport() {
         pdf.setTextColor(255, 255, 255); // White text
         pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('[*] FOTO GENERICHE E OSSERVAZIONI', 20, y + 7);
+        pdf.text('📷 FOTO GENERICHE E OSSERVAZIONI', 20, y + 7);
         pdf.setTextColor(0, 0, 0); // Reset to black
         y += 15;
         

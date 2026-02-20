@@ -1,10 +1,10 @@
-# Come Contribuire a NicheSafe
+# Come Contribuire a Monitoraggio Gallerie
 
-Grazie per il tuo interesse nel contribuire a NicheSafe! 🎉
+Grazie per il tuo interesse nel contribuire a Monitoraggio Gallerie! 🎉
 
 ## 🐛 Segnalare Bug
 
-Se trovi un bug, per favore apri una [issue](https://github.com/tuousername/nichesafe/issues) includendo:
+Se trovi un bug, per favore apri una [issue](https://github.com/alessandromanduchi/checklist-impianti-GGA-rev.3/issues) includendo:
 
 - **Descrizione chiara** del problema
 - **Passi per riprodurre** il bug
@@ -28,8 +28,8 @@ Per proporre una nuova funzionalità:
 1. Fai un fork del repository
 2. Clona il tuo fork:
 ```bash
-git clone https://github.com/tuousername/nichesafe.git
-cd nichesafe
+git clone https://github.com/alessandromanduchi/checklist-impianti-GGA-rev.3.git
+cd checklist-impianti-GGA-rev.3
 ```
 
 3. Avvia un server locale:
@@ -42,7 +42,7 @@ python -m http.server 8000
 ### Struttura del Codice
 
 ```
-nichesafe/
+checklist-impianti-GGA-rev.3/
 ├── index.html          # Struttura HTML
 ├── styles.css          # Stili e layout
 ├── app.js              # Logica principale
@@ -142,4 +142,4 @@ Sii rispettoso, costruttivo e professionale in tutte le interazioni.
 
 ---
 
-Grazie per contribuire a NicheSafe! 🚀
+Grazie per contribuire a Monitoraggio Gallerie! 🚀
