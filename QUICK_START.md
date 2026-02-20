@@ -25,7 +25,7 @@ git init
 git add .
 
 # Primo commit
-git commit -m "Initial commit: NicheSafe v1.0.0 - Checklist Impianti GGA"
+git commit -m "Initial commit: Monitoraggio Gallerie v1.0.0 - Checklist Impianti GGA"
 
 # Collega al repository
 git remote add origin https://github.com/alessandromanduchi/checklist-impianti-GGA-rev.2.git

@@ -93,6 +93,27 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
 
 ---
 
+## [1.3.0] - 2025-02-20
+
+### Corretto
+- **[CRITICO] Foto segnalazioni non salvate nel PDF**: `closeMalfunctionModal()` chiamava `form.reset()` prima che `FileReader` completasse la lettura del file, azzerando `photoInput.files[0]` e rendendo la foto non disponibile. Fix: il file viene catturato in una variabile locale prima di qualsiasi reset; la modal si chiude e il form viene resettato solo all'interno del callback `reader.onload`, garantendo la lettura completa.
+- **[CRITICO] Formato immagine hardcoded a JPEG nel PDF**: `pdf.addImage()` usava sempre `'JPEG'` come formato, causando errori o immagini corrotte per foto PNG, WebP, GIF. Fix: il formato viene rilevato automaticamente dal prefisso del data-URL sia per le foto di malfunzionamento che per le foto generiche.
+- **[ALTO] Chiusura automatica modal malfunzionamento**: la modal ora si chiude automaticamente dopo il salvataggio della foto, garantendo che la chiusura avvenga solo a operazione completata.
+- **[BASSO] Aggiunto gestore `reader.onerror`**: in caso di errore nella lettura del file, viene mostrato un toast di errore invece di fallire silenziosamente.
+
+### Modificato
+- **Configurazione iniziale semplificata**: rimossi i riferimenti geografici "Vernio" e "San Benedetto Val di Sambro" dalla select di configurazione. Le opzioni mostrano solo l'ordine di verifica (Crescente / Decrescente) con la relativa progressiva chilometrica.
+- **Label campo configurazione**: rinominato "Punto di Partenza" in "Ordine di Verifica".
+
+## [1.2.0] - 2025-02-19
+
+### Corretto
+- **[CRITICO] Sezione "Apprestamenti Non Funzionanti" assente nel PDF**: `TECH_NICHES_DATA.find(n => n.id === item.id)` falliva perché le nicchie nel dataset non hanno il campo `id`. Fix: ricerca per `km` e `binario`.
+- **[ALTO] Service Worker percorso errato**: il path di registrazione puntava a `rev.2` invece di `rev.3`, impedendo il funzionamento offline.
+- **[ALTO] Errore JS in `clearAllData()`**: chiamata a `populateStartNicheSelect()` non definita causava crash al click su "Cancella Dati".
+- **[MEDIO] Event listener duplicato su `illuminazione-fault-type`**: cercava l'elemento `corpi-count-group` non presente nell'HTML. Rimosso il listener ridondante.
+- **[BASSO] Emoji nei testi PDF**: jsPDF non supporta emoji Unicode nei font standard, causando quadratini vuoti. Sostituite con etichette ASCII.
+
 ## [Unreleased]
 
 ### In Sviluppo
@@ -126,5 +147,5 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
 - `Corretto` - per bug fix
 - `Sicurezza` - in caso di vulnerabilità
 
-[1.0.0]: https://github.com/tuousername/nichesafe/releases/tag/v1.0.0
-[Unreleased]: https://github.com/tuousername/nichesafe/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/alessandromanduchi/checklist-impianti-GGA-rev.3/releases/tag/v1.0.0
+[Unreleased]: https://github.com/alessandromanduchi/checklist-impianti-GGA-rev.3/compare/v1.0.0...HEAD
