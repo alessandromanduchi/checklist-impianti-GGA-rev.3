@@ -1674,7 +1674,7 @@ async function actuallyGenerateReport() {
         pdf.setTextColor(255, 255, 255); // White text
         pdf.setFontSize(12);
         pdf.setFont(undefined, 'bold');
-        pdf.text('[*] FOTO GENERICHE E OSSERVAZIONI', 20, y + 7);
+        pdf.text('[*] VERIFICA ALTRI IMPIANTI', 20, y + 7);
         pdf.setTextColor(0, 0, 0); // Reset to black
         y += 15;
         
