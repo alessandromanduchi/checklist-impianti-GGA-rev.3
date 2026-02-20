@@ -737,7 +737,7 @@ function populateAllNichesSelect() {
     
     ALL_NICHES_DATA.forEach(niche => {
         const option = document.createElement('option');
-        option.value = `${niche.km}-${niche.binario}`;
+        option.value = `${niche.km} - Binario ${niche.binario}`;
         option.textContent = `${niche.km} - Binario ${niche.binario}`;
         select.appendChild(option);
     });
@@ -851,7 +851,7 @@ function openGenericPhotoModal() {
     sortedNicheIndices.forEach(originalIndex => {
         const niche = TECH_NICHES_DATA[originalIndex];
         const option = document.createElement('option');
-        option.value = `${niche.km}-${niche.binario}`;
+        option.value = `${niche.km} - Binario ${niche.binario}`;
         option.textContent = `Km ${niche.km} - Binario ${niche.binario}`;
         locationSelect.appendChild(option);
     });
@@ -1429,128 +1429,148 @@ async function actuallyGenerateReport() {
         pdf.text('Nessuna nicchia verificata', 20, y);
     }
     
-    // Malfunctions
+    // ── SEGNALAZIONI MALFUNZIONAMENTI ─────────────────────────────────────────
     console.log('PDF Generation - Checking malfunctions:', malfunctions.length);
     if (malfunctions.length > 0) {
-        console.log('Adding malfunction section to PDF');
-        if (y > 250) {
+
+        // Each malfunction gets its own dedicated page for clarity
+        for (let mIdx = 0; mIdx < malfunctions.length; mIdx++) {
+            const m = malfunctions[mIdx];
+            console.log('Adding malfunction to PDF:', m.id, '| photo:', !!m.photo);
+
+            // Always start a new page for each malfunction report
             pdf.addPage();
-            y = 20;
-        }
-        
-        y += 10;
-        // Section header with background
-        pdf.setFillColor(245, 158, 11); // Orange background
-        pdf.rect(15, y, 180, 10, 'F');
-        pdf.setTextColor(255, 255, 255); // White text
-        pdf.setFontSize(12);
-        pdf.setFont(undefined, 'bold');
-        pdf.text('[!] SEGNALAZIONI MALFUNZIONAMENTI', 20, y + 7);
-        pdf.setTextColor(0, 0, 0); // Reset to black
-        y += 15;
-        
-        pdf.setFontSize(10);
-        pdf.setFont(undefined, 'normal');
-        
-        for (const m of malfunctions) {
-            console.log('Adding malfunction to PDF:', m);
-            if (y > 270) {
-                pdf.addPage();
-                y = 20;
-            }
-            
+            y = 15;
+
+            // ── Page header bar ──────────────────────────────────────────────
+            pdf.setFillColor(245, 158, 11); // Orange
+            pdf.rect(10, y, 190, 12, 'F');
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFontSize(11);
             pdf.setFont(undefined, 'bold');
-            const typeLabel = m.type === 'camminamento_corrimano' ? 'Camminamento e corrimano' : 
-                             (m.type === 'segnaletica' ? 'Segnaletica' : 
-                             (m.type === 'altro' ? 'Altro' : 'Impianto di illuminazione'));
-            pdf.text(`Tipo: ${typeLabel}`, 20, y);
-            y += 5;
-            
-            pdf.setFont(undefined, 'normal');
-            
-            // Show camminamento status if available
-            if (m.camminamentoStatus) {
-                const statusLabel = m.camminamentoStatus === 'agibile' ? 'Agibile' : 'Non Agibile';
-                pdf.text(`Stato: ${statusLabel}`, 25, y);
-                y += 5;
-            }
-            
-            // Show illuminazione fault type and counts if available
-            if (m.illuminazioneFaultType) {
-                const faultTypeLabel = m.illuminazioneFaultType === 'fungo_blu' ? 'Fungo Blu' : 'Corpi Illuminanti';
-                pdf.text(`Tipo guasto: ${faultTypeLabel}`, 25, y);
-                y += 5;
-                
-                // Show appropriate count
-                if (m.funghiCount) {
-                    pdf.text(`Funghi blu non funzionanti: ${m.funghiCount}`, 25, y);
-                    y += 5;
-                } else if (m.lightCount) {
-                    pdf.text(`Corpi illuminanti non funzionanti: ${m.lightCount}`, 25, y);
-                    y += 5;
-                }
-            }
-            
-            // Show QE di riferimento if available (for illuminazione), otherwise show Progressiva
-            if (m.qeRiferimento) {
-                pdf.text(`QE di riferimento: ${m.qeRiferimento}`, 25, y);
-                y += 5;
-                
-                // Show Ramo di riferimento if available
-                if (m.ramoRiferimento) {
-                    const ramoLabel = m.ramoRiferimento === 'destro' ? 'Destro' : 'Sinistro';
-                    pdf.text(`Ramo di riferimento: ${ramoLabel}`, 25, y);
-                    y += 5;
-                }
-            } else if (m.km) {
-                pdf.text(`Progressiva: ${m.km}`, 25, y);
-                y += 5;
-            }
-            
-            if (m.notes) {
-                const lines = pdf.splitTextToSize(`Descrizione: ${m.notes}`, 170);
-                lines.forEach(line => {
-                    if (y > 280) {
-                        pdf.addPage();
-                        y = 20;
-                    }
-                    pdf.text(line, 25, y);
-                    y += 5;
+            pdf.text(`SEGNALAZIONE MALFUNZIONAMENTO  (${mIdx + 1} / ${malfunctions.length})`, 105, y + 8, { align: 'center' });
+            pdf.setTextColor(0, 0, 0);
+            y += 18;
+
+            // ── Info table ───────────────────────────────────────────────────
+            const typeLabel =
+                m.type === 'camminamento_corrimano' ? 'Camminamento e corrimano' :
+                m.type === 'segnaletica'             ? 'Segnaletica' :
+                m.type === 'altro'                   ? 'Altro' :
+                                                       'Impianto di illuminazione';
+
+            // Helper to draw one labelled row
+            const drawRow = (label, value) => {
+                if (!value && value !== 0) return;
+                pdf.setFontSize(9);
+                pdf.setFont(undefined, 'bold');
+                pdf.setFillColor(241, 245, 249); // Light gray bg for label cell
+                pdf.rect(12, y - 4, 50, 8, 'F');
+                pdf.text(label, 14, y + 0.5);
+                pdf.setFont(undefined, 'normal');
+                const lines = pdf.splitTextToSize(String(value), 128);
+                lines.forEach((line, li) => {
+                    pdf.text(line, 64, y + (li * 5));
                 });
+                y += Math.max(8, lines.length * 5 + 1);
+            };
+
+            drawRow('Tipo:', typeLabel);
+
+            // Camminamento
+            if (m.camminamentoStatus) {
+                drawRow('Stato camminamento:', m.camminamentoStatus === 'agibile' ? 'Agibile' : 'Non Agibile');
             }
-            
-            pdf.text(`Data: ${new Date(m.timestamp).toLocaleString('it-IT')}`, 25, y);
-            y += 5;
-            
-            // Add malfunction photo
-            if (m.photo) {
-                if (y > 200) {
-                    pdf.addPage();
-                    y = 20;
+
+            // Illuminazione details
+            if (m.illuminazioneFaultType) {
+                drawRow('Tipo guasto:', m.illuminazioneFaultType === 'fungo_blu' ? 'Fungo Blu' : 'Corpi Illuminanti');
+                if (m.funghiCount) drawRow('Funghi blu guasti:', m.funghiCount);
+                if (m.lightCount)  drawRow('Corpi illuminanti guasti:', m.lightCount);
+            }
+
+            // Location
+            if (m.qeRiferimento) {
+                drawRow('QE di riferimento:', m.qeRiferimento);
+                if (m.ramoRiferimento) {
+                    drawRow('Ramo di riferimento:', m.ramoRiferimento === 'destro' ? 'Destro' : 'Sinistro');
                 }
-                
+            }
+            // Always show km/progressiva if present (even alongside QE for context)
+            if (m.km) {
+                drawRow('Progressiva chilometrica:', m.km);
+            }
+
+            // Description
+            if (m.notes && m.notes.trim()) {
+                drawRow('Descrizione:', m.notes.trim());
+            }
+
+            // Timestamp
+            drawRow('Data / Ora:', new Date(m.timestamp).toLocaleString('it-IT'));
+
+            // ── Operator (from global operatorInfo) ──────────────────────────
+            drawRow('Operatore:', `${operatorInfo.firstName} ${operatorInfo.lastName} (${operatorInfo.sector})`);
+
+            y += 4;
+
+            // ── Photo ────────────────────────────────────────────────────────
+            if (m.photo && m.photo.length > 100) {
+                // Determine format from data-URL prefix
+                let imgFormat = 'JPEG';
+                if (m.photo.startsWith('data:image/png'))  imgFormat = 'PNG';
+                else if (m.photo.startsWith('data:image/webp')) imgFormat = 'WEBP';
+                else if (m.photo.startsWith('data:image/gif'))  imgFormat = 'GIF';
+
+                // Photo label
+                pdf.setFontSize(9);
+                pdf.setFont(undefined, 'bold');
+                pdf.setFillColor(241, 245, 249);
+                pdf.rect(12, y - 4, 50, 8, 'F');
+                pdf.text('Foto allegata:', 14, y + 0.5);
+                pdf.setFont(undefined, 'normal');
+                y += 8;
+
+                // Max image area: full width (186mm) up to bottom margin (275mm)
+                const maxImgW = 178;
+                const maxImgH = Math.min(160, 275 - y);
+
                 try {
-                    const imgWidth = 80;
-                    const imgHeight = 60;
-                    // FIX: detect image format from data-URL instead of hardcoding JPEG
-                    // data-URL format: data:[<mimeType>];base64,<data>
-                    let imgFormat = 'JPEG';
-                    if (m.photo.startsWith('data:image/png')) {
-                        imgFormat = 'PNG';
-                    } else if (m.photo.startsWith('data:image/webp')) {
-                        imgFormat = 'WEBP';
-                    } else if (m.photo.startsWith('data:image/gif')) {
-                        imgFormat = 'GIF';
+                    // Get intrinsic dimensions to maintain aspect ratio
+                    const imgProps = pdf.getImageProperties(m.photo);
+                    let drawW = maxImgW;
+                    let drawH = (imgProps.height / imgProps.width) * drawW;
+                    if (drawH > maxImgH) {
+                        drawH = maxImgH;
+                        drawW = (imgProps.width / imgProps.height) * drawH;
                     }
-                    pdf.addImage(m.photo, imgFormat, 25, y, imgWidth, imgHeight);
-                    y += imgHeight + 10;
-                } catch (error) {
-                    console.error('Error adding malfunction photo to PDF:', error);
-                    pdf.text('[Errore caricamento foto]', 25, y);
-                    y += 10;
+                    const xOffset = 10 + (190 - drawW) / 2; // Centre horizontally
+                    pdf.addImage(m.photo, imgFormat, xOffset, y, drawW, drawH);
+                    y += drawH + 5;
+                } catch (imgErr) {
+                    console.error('Error adding malfunction photo:', imgErr);
+                    pdf.setFontSize(9);
+                    pdf.setTextColor(200, 0, 0);
+                    pdf.text('[Errore nel rendering della foto: ' + imgErr.message + ']', 14, y);
+                    pdf.setTextColor(0, 0, 0);
+                    y += 8;
                 }
+            } else {
+                pdf.setFontSize(9);
+                pdf.setTextColor(150, 150, 150);
+                pdf.text('[Nessuna foto allegata]', 14, y);
+                pdf.setTextColor(0, 0, 0);
+                y += 8;
             }
+
+            // ── Bottom separator line ────────────────────────────────────────
+            pdf.setDrawColor(200, 200, 200);
+            pdf.setLineWidth(0.3);
+            if (y < 275) { pdf.line(10, y, 200, y); }
         }
+
+        // Reset y after malfunction pages so remaining sections start fresh
+        y = 20;
     }
     
     // Generic Photos Section
