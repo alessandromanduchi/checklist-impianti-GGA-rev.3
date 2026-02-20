@@ -11,10 +11,11 @@ let currentFilter = 'all'; // Equipment type filter: 'all', 'tem', 'idrante', 'q
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    // Clear checklist data on page reload - fresh start every time
-    // But keep malfunctions and genericPhotos until PDF is generated
+    // Clear all data on page reload - fresh start every time
     localStorage.removeItem('checklistData');
     localStorage.removeItem('verificationConfig');
+    localStorage.removeItem('malfunctions');
+    localStorage.removeItem('genericPhotos');
     
     // Always start with config modal
     document.getElementById('config-modal').classList.add('show');
@@ -145,12 +146,6 @@ function initializeChecklist() {
     updatePaginationButton();
     
     document.getElementById('niche-count').textContent = `${TECH_NICHES_DATA.length} Nicchie`;
-    
-    // B-08 FIX: Restore malfunctions and generic photos saved from previous session
-    const _savedMalf = localStorage.getItem('malfunctions');
-    if (_savedMalf) { try { malfunctions = JSON.parse(_savedMalf); } catch(e) {} }
-    const _savedGP = localStorage.getItem('genericPhotos');
-    if (_savedGP) { try { genericPhotos = JSON.parse(_savedGP); } catch(e) {} }
 }
 
 function showMoreNiches() {
@@ -817,8 +812,6 @@ document.getElementById('malfunction-form')?.addEventListener('submit', async fu
         malfunction.photoMimeType = photoFile.type || 'image/jpeg';
         
         malfunctions.push(malfunction);
-        console.log('Malfunction saved:', malfunction.id, '| photo size:', malfunction.photo.length, '| type:', malfunction.photoMimeType);
-        console.log('Total malfunctions:', malfunctions.length);
         saveMalfunctionsToLocalStorage();
         
         // FIX: Close modal AFTER photo is successfully read (prevents form.reset() from
@@ -1234,10 +1227,6 @@ async function actuallyGenerateReport() {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF();
     
-    // Debug: Log malfunctions at PDF generation time
-    console.log('Generating PDF - Malfunctions:', malfunctions);
-    console.log('Malfunctions count:', malfunctions.length);
-    
     let y = 20;
     
     // Header with box
@@ -1537,9 +1526,7 @@ async function actuallyGenerateReport() {
     }
     
     // Malfunctions
-    console.log('PDF Generation - Checking malfunctions:', malfunctions.length);
     if (malfunctions.length > 0) {
-        console.log('Adding malfunction section to PDF');
         if (y > 250) {
             pdf.addPage();
             y = 20;
@@ -1560,7 +1547,6 @@ async function actuallyGenerateReport() {
         pdf.setFont(undefined, 'normal');
         
         for (const m of malfunctions) {
-            console.log('Adding malfunction to PDF:', m);
             if (y > 270) {
                 pdf.addPage();
                 y = 20;
@@ -1785,11 +1771,6 @@ async function actuallyGenerateReport() {
     pdf.save(`report_apprestamenti_${new Date().toISOString().split('T')[0]}.pdf`);
     
     showToast('Report PDF generato con successo', 'success');
-    
-    // Clear all data after PDF generation
-    setTimeout(() => {
-        clearAllData();
-    }, 3000); // Wait 3 seconds to allow user to see success message
 }
 
 // Toast notification
