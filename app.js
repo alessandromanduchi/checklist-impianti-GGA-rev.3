@@ -985,6 +985,12 @@ document.getElementById('generic-photo-form')?.addEventListener('submit', async 
         genericPhoto.km = document.getElementById('generic-obs-km').value;
     }
 
+    // Close modal immediately after all form data has been captured.
+    // photoFile is already held as a local reference, so the form.reset()
+    // triggered by closeGenericPhotoModal() cannot interfere with the
+    // FileReader that is about to read it.
+    closeGenericPhotoModal();
+
     const reader = new FileReader();
     reader.onload = (ev) => {
         genericPhoto.photo = ev.target.result;
@@ -992,7 +998,6 @@ document.getElementById('generic-photo-form')?.addEventListener('submit', async 
         genericPhotos.push(genericPhoto);
         saveGenericPhotosToLocalStorage();
         showToast('Osservazione salvata con successo', 'success');
-        closeGenericPhotoModal();
     };
     reader.onerror = () => {
         showToast('Errore nella lettura della foto. Riprovare.', 'error');

@@ -93,6 +93,11 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
 
 ---
 
+## [1.3.2] - 2026-03-06
+
+### Corretto
+- **[ALTO] Finestra "Verifica Altri Impianti" non si chiude dopo "Salva Osservazione"**: `closeGenericPhotoModal()` era chiamata all'interno del callback asincrono `reader.onload`. Qualsiasi eccezione sollevata prima di raggiungere quella riga (ad es. `QuotaExceededError` da `localStorage.setItem`) impediva la chiusura della finestra. Fix: `closeGenericPhotoModal()` viene ora chiamata in modo sincrono subito dopo la cattura di tutti i dati del form, prima dell'avvio del `FileReader`. Il riferimento `photoFile` è già catturato in una variabile locale, quindi il successivo `form.reset()` non interferisce con la lettura asincrona del file.
+
 ## [1.3.1] - 2026-02-20
 
 ### Corretto
