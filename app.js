@@ -865,12 +865,17 @@ function updateGenericObsForm() {
     const ramoGroup = document.getElementById('generic-obs-ramo-group');
     const kmGroup = document.getElementById('generic-obs-km-group');
     const kmSelect = document.getElementById('generic-obs-km');
+    const funghiInput = document.getElementById('generic-obs-funghi-count');
+    const corpiSelect = document.getElementById('generic-obs-corpi-count');
 
-    // Hide all type-specific fields
+    // Hide all type-specific fields and remove any dynamically-added required attributes
+    // so that hidden fields don't block form re-submission (e.g. on mobile Safari)
     if (camminamentoStatusGroup) camminamentoStatusGroup.style.display = 'none';
     if (illuminazioneFaultTypeGroup) illuminazioneFaultTypeGroup.style.display = 'none';
     if (funghiGroup) funghiGroup.style.display = 'none';
+    if (funghiInput) funghiInput.removeAttribute('required');
     if (corpiGroup) corpiGroup.style.display = 'none';
+    if (corpiSelect) corpiSelect.removeAttribute('required');
     if (qeGroup) qeGroup.style.display = 'none';
     if (ramoGroup) ramoGroup.style.display = 'none';
     if (kmGroup) kmGroup.style.display = 'none';
@@ -980,6 +985,12 @@ document.getElementById('generic-photo-form')?.addEventListener('submit', async 
         genericPhoto.km = document.getElementById('generic-obs-km').value;
     }
 
+    // Close modal immediately after all form data has been captured.
+    // photoFile is already held as a local reference, so the form.reset()
+    // triggered by closeGenericPhotoModal() cannot interfere with the
+    // FileReader that is about to read it.
+    closeGenericPhotoModal();
+
     const reader = new FileReader();
     reader.onload = (ev) => {
         genericPhoto.photo = ev.target.result;
@@ -987,7 +998,6 @@ document.getElementById('generic-photo-form')?.addEventListener('submit', async 
         genericPhotos.push(genericPhoto);
         saveGenericPhotosToLocalStorage();
         showToast('Osservazione salvata con successo', 'success');
-        closeGenericPhotoModal();
     };
     reader.onerror = () => {
         showToast('Errore nella lettura della foto. Riprovare.', 'error');
